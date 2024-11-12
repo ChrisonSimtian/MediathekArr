@@ -23,6 +23,8 @@ using TVDB.Models;
 namespace TVDB
 {
     using System = global::System;
+    using Action = Models.Action;
+    using Type = Models.Type;
 
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class LoginClient 
