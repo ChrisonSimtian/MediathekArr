@@ -1,15 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using MediathekArr.Domain;
 using MediathekArr.Utilities;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Tvdb.Sdk;
+using TVDB;
+using TVDB.Models;
 
 namespace MediathekArr.Controllers;
 
@@ -19,21 +18,17 @@ public class SeriesController : ControllerBase
 {
     public MediathekArrContext dbContext { get; }
     public HttpClient HttpClient { get; }
+    public LoginClient LoginClient { get; }
+    public SeriesClient SeriesClient { get; }
     public string ApiKey { get; }
 
-    public ILoginClient LoginClient { get; }
-    public SdkClientSettings SdkClientSettings { get; }
-    public ISearchClient SearchClient { get; }
-    public TVDB.TvdbClient TvdbClient { get; }
 
-    public SeriesController(HttpClient httpClient, IConfiguration configuration, ILoginClient loginClient, SdkClientSettings sdkClientSettings, ISearchClient searchClient, TVDB.TvdbClient tvdbClient)
+    public SeriesController(HttpClient httpClient, IConfiguration configuration, LoginClient loginClient, SeriesClient seriesClient)
     {
         dbContext = new MediathekArrContext();
         HttpClient = httpClient;
         LoginClient = loginClient;
-        SdkClientSettings = sdkClientSettings;
-        SearchClient = searchClient;
-        TvdbClient = tvdbClient;
+        SeriesClient = seriesClient;
         ApiKey = configuration["TvDbApiKey"];
     }
 
@@ -89,13 +84,13 @@ public class SeriesController : ControllerBase
     {
         try
         {
-            var loginResult = await TvdbClient.LoginAsync(new TVDB.Body
+            var loginResult = await LoginClient.LoginAsync(new Body
             {
                 Apikey = ApiKey,
             });
 
             // TODO: Inject bearer token
-            var seriesResult = await TvdbClient.GetSeriesExtendedAsync(tvdbId, TVDB.Meta4.Episodes, true);
+            var seriesResult = await SeriesClient.ExtendedAsync(tvdbId, Meta4.Episodes, true);
 
             if(seriesResult.Status != "success") return BadRequest(new { status = "error", message = "Failed to fetch data from TVDB" });
 
@@ -112,7 +107,7 @@ public class SeriesController : ControllerBase
 
             return Ok(data);
         }
-        catch (LoginException)
+        catch (ApiException)
         {
             return BadRequest(new { status = "error", message = "Failed to retrieve valid token from TVDB" });
         }
