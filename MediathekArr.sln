@@ -5,6 +5,8 @@ VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediathekArr", "MediathekArr\MediathekArr.csproj", "{325043A5-5585-4C48-B947-A1E69EAE8343}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediathekArr.Tests", "MediathekArr.Tests\MediathekArr.Tests.csproj", "{6B985D55-61B8-4BBE-9FB2-02A6BDE7000A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{325043A5-5585-4C48-B947-A1E69EAE8343}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{325043A5-5585-4C48-B947-A1E69EAE8343}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{325043A5-5585-4C48-B947-A1E69EAE8343}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B985D55-61B8-4BBE-9FB2-02A6BDE7000A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B985D55-61B8-4BBE-9FB2-02A6BDE7000A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B985D55-61B8-4BBE-9FB2-02A6BDE7000A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B985D55-61B8-4BBE-9FB2-02A6BDE7000A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
