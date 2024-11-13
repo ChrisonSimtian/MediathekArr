@@ -14,7 +14,7 @@ public partial class MediathekSearchService(IHttpClientFactory httpClientFactory
     private readonly IMemoryCache _cache = cache;
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient(Constants.HttpClientNameConstants.MediathekArrClient);
     private readonly TimeSpan _cacheTimeSpan = TimeSpan.FromMinutes(55);
-    private static readonly string[] SkipKeywords = ["(Audiodeskription)", "(klare Sprache)", "(Gebärdensprache)", "Trailer"];
+    private static readonly string[] SkipKeywords = ["Audiodeskription", "(klare Sprache)", "(Gebärdensprache)", "Trailer", "Outtakes:"];
     private static readonly string[] queryField = ["topic"];
     public async Task<string> FetchSearchResultsFromApiById(TvdbData tvdbData, string? season, string? episodeNumber)
     {
@@ -186,7 +186,18 @@ public partial class MediathekSearchService(IHttpClientFactory httpClientFactory
         return results.Where(item =>
         {
             var normalizedTitle = NormalizeString(item.Title);
-            return normalizedTitle.Contains(normalizedEpisodeName, StringComparison.OrdinalIgnoreCase);
+            if (normalizedTitle.Contains(normalizedEpisodeName, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+            else if (normalizedEpisodeName.Length >= 13 && normalizedTitle.Length >= 10)
+            {
+                return normalizedEpisodeName.Contains(normalizedTitle, StringComparison.OrdinalIgnoreCase);
+            }
+            else
+            {
+                return false;
+            }
         }).ToList();
     }
 
@@ -617,7 +628,7 @@ public partial class MediathekSearchService(IHttpClientFactory httpClientFactory
 
     [GeneratedRegex(@"[&]")]
     private static partial Regex TitleRegexUnd();
-    [GeneratedRegex(@"[/:;""'@#?$%^*+=!<>]")]
+    [GeneratedRegex(@"[/:;""'@#?$%^*+=!<>,()]")]
     private static partial Regex TitleRegexSymbols();
     [GeneratedRegex(@"\s+")]
     private static partial Regex TitleRegexWhitespace();
