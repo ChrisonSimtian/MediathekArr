@@ -4,9 +4,10 @@ using System.Data;
 using System.Text.Json;
 using System.Threading.Tasks;
 using MediathekArr.Domain;
-using MediathekArr.Utilities;
+using MediathekArr.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using TVDB;
 using TVDB.Models;
 
@@ -14,42 +15,39 @@ namespace MediathekArr.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class SeriesController : ControllerBase
+public class SeriesController(MediathekArrContext context, SeriesClient seriesClient, IMemoryCache cache) : ControllerBase
 {
-    public MediathekArrContext dbContext { get; }
-    public HttpClient HttpClient { get; }
-    public LoginClient LoginClient { get; }
-    public SeriesClient SeriesClient { get; }
-    public string ApiKey { get; }
+    #region Properties
+    public MediathekArrContext Context { get; } = context;
+    public SeriesClient SeriesClient { get; } = seriesClient;
+    public IMemoryCache Cache { get; } = cache;
+    #endregion
 
-
-    public SeriesController(HttpClient httpClient, IConfiguration configuration, LoginClient loginClient, SeriesClient seriesClient)
-    {
-        dbContext = new MediathekArrContext();
-        HttpClient = httpClient;
-        LoginClient = loginClient;
-        SeriesClient = seriesClient;
-        ApiKey = configuration["TvDbApiKey"];
-    }
-
-    // Helper function to determine if cache is expired
-    private bool IsCacheExpired(DateTime cacheExpiry) => DateTime.Now > cacheExpiry;
-
-    // Main function to fetch series information
+    /// <summary>
+    /// Fetch Series Information
+    /// </summary>
+    /// <param name="tvdbId"></param>
+    /// <param name="debug"></param>
+    /// <returns></returns>
     [HttpGet("{tvdbId}")]
-    public async Task<IActionResult> GetSeriesData(int tvdbId, bool debug = false)
+    [ResponseCache(Duration = Constants.CacheConstants.ResponseCacheDuration)]
+    public async Task<IActionResult> GetSeriesData(int tvdbId)
     {
         try
         {
-            bool cached = await dbContext.SeriesCache.AnyAsync(r => r.SeriesId == tvdbId);
+            if(!Cache.TryGetValue(tvdbId, out Series seriesData))
+            {
+                bool existsInDatabase = await Context.SeriesCache.AnyAsync(r => r.SeriesId == tvdbId);
+                if (!existsInDatabase) await GetSeriesDataFromTvdb(tvdbId);
 
-            if(!cached) await FetchAndCacheSeriesData(tvdbId, debug);
+                /* Fetch from Database */
+                seriesData = await Context.SeriesCache.FirstAsync(r => r.SeriesId == tvdbId);
 
-            // Fetch from cache
-            var seriesData = await dbContext.SeriesCache.FirstAsync(r => r.SeriesId == tvdbId);
-
+                Cache.Set(tvdbId, seriesData, Factories.MemoryCacheEntryOptionsFactory.Default);
+            }
+            
             // Return cached data if available and not expired
-            var episodes = await dbContext.Episodes.Where(r => r.Series.SeriesId == tvdbId).ToListAsync();
+            var episodes = await Context.Episodes.Where(r => r.Series.SeriesId == tvdbId).ToListAsync();
 
             var response = new
             {
@@ -79,20 +77,20 @@ public class SeriesController : ControllerBase
         }
     }
 
-    // Function to fetch and cache data from TVDB
-    private async Task<IActionResult> FetchAndCacheSeriesData(int tvdbId, bool debug = false)
+    /// <summary>
+    /// Fetch Series Data from TVDB API
+    /// </summary>
+    /// <param name="tvdbId"></param>
+    /// <param name="debug"></param>
+    /// <returns></returns>
+    private async Task<IActionResult> GetSeriesDataFromTvdb(int tvdbId)
     {
+        // TODO: This needs refactoring as it returns IActionResult where instead it should just grab everything and return it plan
         try
         {
-            var loginResult = await LoginClient.LoginAsync(new Body
-            {
-                Apikey = ApiKey,
-            });
-
-            // TODO: Inject bearer token
             var seriesResult = await SeriesClient.ExtendedAsync(tvdbId, Meta4.Episodes, true);
 
-            if(seriesResult.Status != "success") return BadRequest(new { status = "error", message = "Failed to fetch data from TVDB" });
+            if (seriesResult.Status != "success") return BadRequest(new { status = "error", message = "Failed to fetch data from TVDB" });
 
             var data = new TvdbResponse
             {
@@ -112,6 +110,4 @@ public class SeriesController : ControllerBase
             return BadRequest(new { status = "error", message = "Failed to retrieve valid token from TVDB" });
         }
     }
-
-    // TODO: Implement GetToken method
 }

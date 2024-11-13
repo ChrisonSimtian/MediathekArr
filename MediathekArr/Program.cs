@@ -1,15 +1,28 @@
+using CommunityToolkit.Diagnostics;
+using MediathekArr.Handler;
+using MediathekArr.Infrastructure;
 using MediathekArr.Services;
-using MediathekArr.Utilities;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+/* Add Memory Cache to reduce load on Downstream */
 builder.Services.AddMemoryCache();
 
+/* Add Response Caching to reduce load on Downstream APIs */
+builder.Services.AddResponseCaching();
+
 /* Pull up SQLite Database */
-builder.Services.AddDbContext<MediathekArrContext>();
+builder.Services.AddDbContextFactory<MediathekArrContext>(options =>
+{
+    var connectionString = builder.Configuration.GetConnectionString(MediathekArr.Constants.ConfigurationConstants.MediathekArrConnectionString);
+    Guard.IsNotNullOrEmpty(connectionString, nameof(connectionString));
+    options.UseSqlite(connectionString);
+}, ServiceLifetime.Scoped);
 // TODO: We need to run migrations in app.Use() once we start using migrations to update the DB schema
 // TODO: TVDB recommends to pull the whole DB into a local copy. Maybe we do an initial seeding? And then run hangfire to periodically update the local copy?
 
@@ -36,9 +49,9 @@ builder.Services.AddHttpClient(MediathekArr.Constants.HttpClientNameConstants.Tv
 builder.Services.AddHttpClient<TVDB.SeriesClient>(MediathekArr.Constants.HttpClientNameConstants.TvdbClient);
 builder.Services.AddHttpClient<TVDB.SearchClient>(MediathekArr.Constants.HttpClientNameConstants.TvdbClient);
 
-builder.Services.AddSingleton<MediathekSearchService>();
-builder.Services.AddSingleton<ItemLookupService>();
-builder.Services.AddSingleton<DownloadService>();
+builder.Services.AddScoped<MediathekSearchService>();
+builder.Services.AddScoped<ItemLookupService>();
+builder.Services.AddScoped<DownloadService>();
 
 
 var app = builder.Build();
@@ -69,6 +82,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+/* Use Response Caching to avoid querying Downstream APIs too often */
+app.UseResponseCaching();
 
 app.UseHttpsRedirection();
 

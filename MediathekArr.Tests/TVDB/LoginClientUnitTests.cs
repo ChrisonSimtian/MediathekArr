@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using MediathekArr.Handler;
 using MediathekArr.Tests;
 using MediathekArr.Tests.Fixtures;
 using Microsoft.Extensions.Configuration;
@@ -43,7 +44,7 @@ public class LoginClientUnitTests(TestWebApplicationFactory factory) : AbstractI
     public void DependencyInjection_Fact()
     {
         // Arrange
-        var tvdbBearerTokenHandler = Factory.Services.GetService<TvdbBearerTokenHandler>();
+        var tvdbBearerTokenHandler = ScopedServiceProvider.GetService<TvdbBearerTokenHandler>();
         // TODO: DI for LoginClient
 
         // Assert
@@ -58,7 +59,7 @@ public class LoginClientUnitTests(TestWebApplicationFactory factory) : AbstractI
     public async Task BearerTokenHandler_Fact()
     {
         // Arrange
-        var randomClient = Factory.Services.GetRequiredService<SeriesClient>();
+        var randomClient = ScopedServiceProvider.GetRequiredService<SeriesClient>();
 
         // Act
         var result = await randomClient.SeriesGetAsync(291180);

@@ -1,6 +1,7 @@
-﻿using TVDB;
+﻿using System.Net.Http.Headers;
+using TVDB;
 
-namespace System.Net.Http
+namespace MediathekArr.Handler
 {
     /// <summary>
     /// Bearer Token implementation for TVDB
@@ -21,6 +22,11 @@ namespace System.Net.Http
         /// Bearer Token
         /// </summary>
         public string? Token { get; private set; } // TODO: We should somehow cache this token. But also need to find out how long its valid in order to cache it, so leave it be for now
+
+        /// <summary>
+        /// API Key for TVDB
+        /// </summary>
+        public string ApiKey => Configuration.GetValue<string>(Constants.ConfigurationConstants.TvdbApiKey) ?? string.Empty;
         #endregion
 
         #region Methods
@@ -31,7 +37,7 @@ namespace System.Net.Http
         /// <exception cref="Exception"></exception>
         public async Task<string> AcquireToken()
         {
-            if (string.IsNullOrEmpty(Configuration.GetValue<string>(MediathekArr.Constants.ConfigurationConstants.TvdbApiKey)))
+            if (string.IsNullOrEmpty(ApiKey))
             {
                 Logger.LogError("TvDbApiKey not configured");
                 throw new Exception("TvDbApiKey not configured");
@@ -44,7 +50,7 @@ namespace System.Net.Http
                 var tvDbClient = new LoginClient(new HttpClient());
 
                 // then get the login result
-                var loginResult = await tvDbClient.LoginAsync(new() { Apikey = Configuration.GetValue<string>(MediathekArr.Constants.ConfigurationConstants.TvdbApiKey), });
+                var loginResult = await tvDbClient.LoginAsync(new() { Apikey = ApiKey, });
 
                 // On success, store new Token. Else throw an exception
                 if (loginResult.Status == "success")
@@ -70,7 +76,7 @@ namespace System.Net.Http
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var token = await AcquireToken();
-            request.Headers.Authorization = new Headers.AuthenticationHeaderValue("Bearer", token);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             return await base.SendAsync(request, cancellationToken);
         }
         #endregion
