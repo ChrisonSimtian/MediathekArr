@@ -1,4 +1,6 @@
 using CommunityToolkit.Diagnostics;
+using Hangfire;
+using Hangfire.PostgreSql;
 using MediathekArr.Handler;
 using MediathekArr.Infrastructure;
 using MediathekArr.Services;
@@ -27,6 +29,15 @@ builder.Services.AddDbContextFactory<MediathekArrContext>(options =>
 }, ServiceLifetime.Scoped);
 // TODO: We need to run migrations in app.Use() once we start using migrations to update the DB schema
 // TODO: TVDB recommends to pull the whole DB into a local copy. Maybe we do an initial seeding? And then run hangfire to periodically update the local copy?
+
+/* Add Hangfire to schedule Downloads as a background task */
+builder.Services.AddHangfire(config =>
+{
+    config.UsePostgreSqlStorage(c =>
+    {
+        c.UseNpgsqlConnection(builder.Configuration.GetConnectionString("postgres"));
+    });
+});
 
 /* Set up the HTTP Client for HttpClientFactory */
 builder.Services.AddHttpClient(MediathekArr.Constants.HttpClientNameConstants.MediathekArrClient, client =>
@@ -69,12 +80,12 @@ app.Use(async (context, next) =>
     await next.Invoke();
 });
 
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseHangfireDashboard();
 }
 
 /* Use Response Caching to avoid querying Downstream APIs too often */

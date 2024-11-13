@@ -109,7 +109,7 @@ public partial class DownloaderController(DownloadService downloadService) : Con
 
         var completeDir = !string.IsNullOrEmpty(downloadFolderPathMapping)
             ? Path.Combine(downloadFolderPathMapping)
-            : Path.Combine(startupPath, "downloads"); ;
+            : Path.Combine(startupPath, "downloads");
 
         return @$"{{
         ""config"": {{

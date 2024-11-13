@@ -129,7 +129,7 @@ public partial class MediathekSearchService(IHttpClientFactory httpClientFactory
                 Results = [.. filteredResults],
                 QueryInfo = responseObject.Result.QueryInfo
             },
-            Err = responseObject.Err
+            Error = responseObject.Error
         };
 
         return filteredApiResponse;

@@ -2,28 +2,22 @@ using Microsoft.AspNetCore.Mvc;
 using System.Text;
 using MediathekArr.Services;
 
-namespace MediathekArr.Controllers
+namespace MediathekArr.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class IndexerController(MediathekSearchService mediathekSearchService, ItemLookupService itemLookupService) : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class IndexerController(MediathekSearchService mediathekSearchService, ItemLookupService itemLookupService) : ControllerBase
+    public MediathekSearchService MediathekSearchService { get; } = mediathekSearchService;
+    public ItemLookupService ItemLookupService { get; } = itemLookupService;
+
+    [HttpGet]
+    [ResponseCache(Duration = Constants.CacheConstants.ResponseCacheDuration)]
+    public async Task<IActionResult> GetCapsXml([FromQuery] string t, [FromQuery] string q, [FromQuery] string imdbid, [FromQuery] string tvdbid, [FromQuery] string season, [FromQuery] string ep, [FromQuery] string cat)
     {
-        public MediathekSearchService MediathekSearchService { get; } = mediathekSearchService;
-        public ItemLookupService ItemLookupService { get; } = itemLookupService;
-
-        [HttpGet]
-        public async Task<IActionResult> GetCapsXml([FromQuery] string t)
+        if (t == "caps")
         {
-            string q = HttpContext.Request.Query["q"];
-            string imdbid = HttpContext.Request.Query["imdbid"];
-            string tvdbid = HttpContext.Request.Query["tvdbid"];
-            string season = HttpContext.Request.Query["season"];
-            string episode = HttpContext.Request.Query["ep"];
-            string cat = HttpContext.Request.Query["cat"];
-
-            if (t == "caps")
-            {
-                string xmlContent = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+            string xmlContent = @"<?xml version=""1.0"" encoding=""UTF-8""?>
 <caps>
     <limits max=""5000"" default=""5000""/>
     <registration available=""no"" open=""no""/>
@@ -45,56 +39,56 @@ namespace MediathekArr.Controllers
     </categories>
 </caps>";
 
-                return Content(xmlContent, "application/xml", Encoding.UTF8);
-            }
-            else if (t == "tvsearch" || t == "search" || t == "movie")
+            return Content(xmlContent, "application/xml", Encoding.UTF8);
+        }
+        else if (t == "tvsearch" || t == "search" || t == "movie")
+        {
+            try
             {
-                try
+                if (!string.IsNullOrEmpty(tvdbid) && int.TryParse(tvdbid, out var parsedTvdbid))
                 {
-                    if (!string.IsNullOrEmpty(tvdbid) && int.TryParse(tvdbid, out var parsedTvdbid))
-                    {
-                        var tvdbData = (await ItemLookupService.GetShowInfoByTvdbId(parsedTvdbid)).Data;
+                    var tvdbData = (await ItemLookupService.GetShowInfoByTvdbId(parsedTvdbid)).Data;
 
-                        string searchResults = await MediathekSearchService.FetchSearchResultsFromApiById(tvdbData, season, episode);
+                    string searchResults = await MediathekSearchService.FetchSearchResultsFromApiById(tvdbData, season, ep);
 
-                        return Content(searchResults, "application/xml", Encoding.UTF8);
-                    }
-                    else
-                    {
-                        string searchResults = await MediathekSearchService.FetchSearchResultsFromApiByString(q, season);
-
-                        return Content(searchResults, "application/xml", Encoding.UTF8);
-                    }
+                    return Content(searchResults, "application/xml", Encoding.UTF8);
                 }
-                catch (HttpRequestException ex)
+                else
                 {
-                    return BadRequest(new { error = ex.Message });
+                    string searchResults = await MediathekSearchService.FetchSearchResultsFromApiByString(q, season);
+
+                    return Content(searchResults, "application/xml", Encoding.UTF8);
                 }
             }
-
-            return NotFound();
+            catch (HttpRequestException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
 
+        return NotFound();
+    }
 
-        [HttpGet("fake_nzb_download")]
-        public IActionResult FakeNzbDownload([FromQuery] string encodedUrl, [FromQuery] string encodedTitle)
-        {
-            string decodedUrl;
-            string decodedTitle;
-            try
-                {
-                var base64EncodedBytesUrl = Convert.FromBase64String(encodedUrl);
-                decodedUrl = Encoding.UTF8.GetString(base64EncodedBytesUrl);
-                var base64EncodedBytesTitle = Convert.FromBase64String(encodedTitle);
-                decodedTitle = Encoding.UTF8.GetString(base64EncodedBytesTitle);
-            }
-            catch (FormatException)
+    [HttpGet("fake_nzb_download")]
+    [ResponseCache(Duration = Constants.CacheConstants.ResponseCacheDuration)]
+    public IActionResult FakeNzbDownload([FromQuery] string encodedUrl, [FromQuery] string encodedTitle)
+    {
+        string decodedUrl;
+        string decodedTitle;
+        try
             {
-                return BadRequest("Invalid base64 string.");
-            }
+            var base64EncodedBytesUrl = Convert.FromBase64String(encodedUrl);
+            decodedUrl = Encoding.UTF8.GetString(base64EncodedBytesUrl);
+            var base64EncodedBytesTitle = Convert.FromBase64String(encodedTitle);
+            decodedTitle = Encoding.UTF8.GetString(base64EncodedBytesTitle);
+        }
+        catch (FormatException)
+        {
+            return BadRequest("Invalid base64 string.");
+        }
 
-            // Define a basic NZB XML structure with the comment and encoded URL.
-            var nzbContent = $@"<?xml version=""1.0"" encoding=""UTF-8"" ?>
+        // Define a basic NZB XML structure with the comment and encoded URL.
+        var nzbContent = $@"<?xml version=""1.0"" encoding=""UTF-8"" ?>
 <!DOCTYPE nzb PUBLIC ""-//newzBin//DTD NZB 1.0//EN"" ""http://www.newzbin.com/DTD/nzb/nzb-1.0.dtd"">
 <!-- {decodedTitle} -->
 <!-- {decodedUrl} -->
@@ -109,13 +103,12 @@ namespace MediathekArr.Controllers
     </file>
 </nzb>";
 
-            // Convert the NZB XML content to byte array
-            var fileContent = Encoding.UTF8.GetBytes(nzbContent);
+        // Convert the NZB XML content to byte array
+        var fileContent = Encoding.UTF8.GetBytes(nzbContent);
 
-            // Set the .nzb file name
-            var nzbFileName = $"mediathek-{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.nzb";
+        // Set the .nzb file name
+        var nzbFileName = $"mediathek-{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.nzb";
 
-            return File(fileContent, "application/x-nzb", nzbFileName);
-        }
+        return File(fileContent, "application/x-nzb", nzbFileName);
     }
 }

@@ -1,4 +1,5 @@
-﻿using MediathekArr.Models;
+﻿using Hangfire;
+using MediathekArr.Models;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO.Compression;
@@ -58,6 +59,8 @@ public partial class DownloadService
         };
 
         _downloadQueue.Enqueue(queueItem);
+
+        BackgroundJob.Enqueue(() => StartDownloadAsync(url, queueItem));
 
         Task.Run(() => StartDownloadAsync(url, queueItem));
 
