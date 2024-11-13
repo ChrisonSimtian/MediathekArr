@@ -8,7 +8,7 @@ using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace TVDB.Tests;
 
-public class LoginClientUnitTests(TestWebApplicationFactory factory) : AbstractIntegratedUnitTest(factory)
+public class LoginClientUnitTests(MediathekArrApiWebApplicationFactory factory) : MediathekArrApiIntegratedUnitTest(factory)
 {
     /// <summary>
     /// Test whether our config is set up properly and whether our API Key is still valid

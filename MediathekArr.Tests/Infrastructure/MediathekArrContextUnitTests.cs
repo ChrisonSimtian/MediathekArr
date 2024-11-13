@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MediathekArr.Infrastructure.Tests;
 
-public class MediathekArrContextUnitTests(TestWebApplicationFactory factory) : AbstractIntegratedUnitTest(factory)
+public class MediathekArrContextUnitTests(MediathekArrWebApplicationFactory factory) : MediathekArrIntegratedUnitTest(factory)
 {
     [Fact]
     public void DependencyInjection_Fact()

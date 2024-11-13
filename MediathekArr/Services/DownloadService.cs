@@ -7,31 +7,38 @@ using System.Runtime.InteropServices;
 
 namespace MediathekArr.Services;
 
+// TODO: Run this via Hangfire as a background job
 public partial class DownloadService
 {
-    private readonly ILogger<DownloadService> _logger;
-    private readonly ConcurrentQueue<SabnzbdQueueItem> _downloadQueue = new();
-    private readonly List<SabnzbdHistoryItem> _downloadHistory = new();
-    private static readonly HttpClient _httpClient = new();
-    private static readonly SemaphoreSlim _semaphore = new(2); // Limit concurrent downloads to 2
-    private readonly string _completeDir;
-    private readonly string _ffmpegPath;
-    private readonly bool _isWindows;
-
-    public DownloadService(ILogger<DownloadService> logger)
+    public DownloadService(IHttpClientFactory httpClientFactory, ILogger<DownloadService> logger)
     {
-        _logger = logger;
-        _isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+        HttpClientFactory = httpClientFactory;
+        HttpClient = HttpClientFactory.CreateClient(Constants.HttpClientNameConstants.MediathekArrClient);
+
+        Logger = logger;
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) OSPlatform = OSPlatform.Linux;
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) OSPlatform = OSPlatform.Windows;
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD)) OSPlatform = OSPlatform.FreeBSD;
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) OSPlatform = OSPlatform.OSX;
 
         // Set complete_dir based on the application's startup path
         var startupPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? string.Empty;
         _completeDir = Path.Combine(startupPath, "downloads");
-        _ffmpegPath = Path.Combine(startupPath, "ffmpeg", _isWindows ? "ffmpeg.exe" : "ffmpeg");
+        _ffmpegPath = Path.Combine(startupPath, "ffmpeg", OSPlatform == OSPlatform.Windows ? "ffmpeg.exe" : "ffmpeg");
 
         // Ensure FFmpeg is available
         Task.Run(EnsureFfmpegExistsAsync).Wait();
     }
+    public ILogger<DownloadService> Logger { get; }
+    public OSPlatform OSPlatform { get; }
+    public IHttpClientFactory HttpClientFactory { get; }
 
+    private readonly ConcurrentQueue<SabnzbdQueueItem> _downloadQueue = new();
+    private readonly List<SabnzbdHistoryItem> _downloadHistory = new();
+    private HttpClient HttpClient { get; }
+    private static readonly SemaphoreSlim _semaphore = new(2); // Limit concurrent downloads to 2
+    private readonly string _completeDir;
+    private readonly string _ffmpegPath;
 
     public IEnumerable<SabnzbdQueueItem> GetQueue() => [.. _downloadQueue];
     public IEnumerable<SabnzbdHistoryItem> GetHistory() => _downloadHistory;
@@ -65,22 +72,22 @@ public partial class DownloadService
 
         try
         {
-            _logger.LogInformation("Starting download for {Title} from URL: {URL}", queueItem.Title, url);
+            Logger.LogInformation("Starting download for {Title} from URL: {URL}", queueItem.Title, url);
             await DownloadFileAsync(url, queueItem);
 
             if (queueItem.Status != SabnzbdDownloadStatus.Failed)
             {
-                _logger.LogInformation("Download complete for {Title}. Starting conversion to MKV.", queueItem.Title);
+                Logger.LogInformation("Download complete for {Title}. Starting conversion to MKV.", queueItem.Title);
                 await ConvertMp4ToMkvAsync(queueItem, stopwatch);
             }
             else
             {
-                _logger.LogWarning("Download failed for {Title}, skipping conversion.", queueItem.Title);
+                Logger.LogWarning("Download failed for {Title}, skipping conversion.", queueItem.Title);
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred during the download or conversion of {Title}.", queueItem.Title);
+            Logger.LogError(ex, "Error occurred during the download or conversion of {Title}.", queueItem.Title);
         }
         finally
         {
@@ -95,20 +102,20 @@ public partial class DownloadService
         try
         {
             var categoryDir = Path.Combine(_completeDir, queueItem.Category);
-            _logger.LogInformation("Ensuring directory exists for category {Category} at path: {Path}", queueItem.Category, categoryDir);
+            Logger.LogInformation("Ensuring directory exists for category {Category} at path: {Path}", queueItem.Category, categoryDir);
             Directory.CreateDirectory(categoryDir);
 
             var fileExtension = Path.GetExtension(url) ?? ".mp4";
             var filePath = Path.Combine(categoryDir, queueItem.Title + fileExtension);
 
-            _logger.LogInformation("Starting download of file to path: {Path} with extension {Extension}", filePath, fileExtension);
+            Logger.LogInformation("Starting download of file to path: {Path} with extension {Extension}", filePath, fileExtension);
             queueItem.Status = SabnzbdDownloadStatus.Downloading;
 
-            var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+            var response = await HttpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
             var totalSize = response.Content.Headers.ContentLength ?? 0;
 
             queueItem.Size = (totalSize / (1024.0 * 1024.0)).ToString("F2");
-            _logger.LogInformation("Total file size for {Title}: {Size} MB", queueItem.Title, queueItem.Size);
+            Logger.LogInformation("Total file size for {Title}: {Size} MB", queueItem.Title, queueItem.Size);
 
             using (var contentStream = await response.Content.ReadAsStreamAsync())
             using (var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
@@ -126,17 +133,17 @@ public partial class DownloadService
                     queueItem.Sizeleft = ((totalSize - totalRead) / (1024.0 * 1024.0)).ToString("F2");
                     queueItem.Percentage = (totalRead / (double)totalSize * 100).ToString("F0");
 
-                    _logger.LogDebug("Download progress for {Title}: {Percentage}% - {SizeLeft} MB remaining", queueItem.Title, queueItem.Percentage, queueItem.Sizeleft);
+                    Logger.LogDebug("Download progress for {Title}: {Percentage}% - {SizeLeft} MB remaining", queueItem.Title, queueItem.Percentage, queueItem.Sizeleft);
                 }
             }
 
             queueItem.Timeleft = "00:00:00";
-            _logger.LogInformation("Download completed for {Title}. File saved to {Path}", queueItem.Title, filePath);
+            Logger.LogInformation("Download completed for {Title}. File saved to {Path}", queueItem.Title, filePath);
         }
         catch (Exception ex)
         {
             queueItem.Status = SabnzbdDownloadStatus.Failed;
-            _logger.LogError(ex, "Download failed for {Title}. Adding to download history as failed.", queueItem.Title);
+            Logger.LogError(ex, "Download failed for {Title}. Adding to download history as failed.", queueItem.Title);
 
             _downloadHistory.Add(new SabnzbdHistoryItem
             {
@@ -187,12 +194,12 @@ public partial class DownloadService
         if (!File.Exists(mp4Path))
         {
             queueItem.Status = SabnzbdDownloadStatus.Failed;
-            _logger.LogWarning("MP4 file not found for conversion. Path: {Mp4Path}. Marking as failed.", mp4Path);
+            Logger.LogWarning("MP4 file not found for conversion. Path: {Mp4Path}. Marking as failed.", mp4Path);
             return;
         }
 
         queueItem.Status = SabnzbdDownloadStatus.Extracting;
-        _logger.LogInformation("Starting conversion of {Title} from MP4 to MKV. MP4 Path: {Mp4Path}, MKV Path: {MkvPath}", queueItem.Title, mp4Path, mkvPath);
+        Logger.LogInformation("Starting conversion of {Title} from MP4 to MKV. MP4 Path: {Mp4Path}, MKV Path: {MkvPath}", queueItem.Title, mp4Path, mkvPath);
 
         var ffmpegArgs = $"-i \"{mp4Path}\" -map 0:v -map 0:a -c copy -metadata:s:v:0 language=ger -metadata:s:a:0 language=ger \"{mkvPath}\"";
 
@@ -212,7 +219,7 @@ public partial class DownloadService
         try
         {
             process.Start();
-            _logger.LogInformation("FFmpeg process started for {Title} with arguments: {Arguments}", queueItem.Title, ffmpegArgs);
+            Logger.LogInformation("FFmpeg process started for {Title} with arguments: {Arguments}", queueItem.Title, ffmpegArgs);
 
             var standardErrorTask = process.StandardError.ReadToEndAsync();
 
@@ -222,12 +229,12 @@ public partial class DownloadService
             if (process.ExitCode == 0)
             {
                 queueItem.Status = SabnzbdDownloadStatus.Completed;
-                _logger.LogInformation("Conversion completed successfully for {Title}. Output path: {MkvPath}", queueItem.Title, mkvPath);
+                Logger.LogInformation("Conversion completed successfully for {Title}. Output path: {MkvPath}", queueItem.Title, mkvPath);
             }
             else
             {
                 queueItem.Status = SabnzbdDownloadStatus.Failed;
-                _logger.LogError("FFmpeg conversion failed for {Title}. Exit code: {ExitCode}. Error output: {ErrorOutput}", queueItem.Title, process.ExitCode, ffmpegOutput);
+                Logger.LogError("FFmpeg conversion failed for {Title}. Exit code: {ExitCode}. Error output: {ErrorOutput}", queueItem.Title, process.ExitCode, ffmpegOutput);
             }
 
             File.Delete(mp4Path);
@@ -258,13 +265,13 @@ public partial class DownloadService
             };
             _downloadHistory.Add(historyItem);
 
-            _logger.LogInformation("Download history updated for {Title}. Status: {Status}, Download Time: {DownloadTime}s, Size: {Size} bytes",
+            Logger.LogInformation("Download history updated for {Title}. Status: {Status}, Download Time: {DownloadTime}s, Size: {Size} bytes",
                 queueItem.Title, queueItem.Status, historyItem.DownloadTime, historyItem.Size);
         }
         catch (Exception ex)
         {
             queueItem.Status = SabnzbdDownloadStatus.Failed;
-            _logger.LogError(ex, "An error occurred during the conversion of {Title} from MP4 to MKV.", queueItem.Title);
+            Logger.LogError(ex, "An error occurred during the conversion of {Title} from MP4 to MKV.", queueItem.Title);
         }
     }
 
@@ -272,41 +279,41 @@ public partial class DownloadService
     {
         if (!File.Exists(_ffmpegPath))
         {
-            _logger.LogInformation("FFmpeg not found at path {FfmpegPath}. Starting download...", _ffmpegPath);
+            Logger.LogInformation("FFmpeg not found at path {FfmpegPath}. Starting download...", _ffmpegPath);
 
             // URLs for downloading FFmpeg based on OS
-            string ffmpegDownloadUrl = _isWindows
+            string ffmpegDownloadUrl = OSPlatform == OSPlatform.Windows
                 ? "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"
                 : "https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz";
 
-            var tempFilePath = Path.Combine(Path.GetTempPath(), _isWindows ? "ffmpeg.zip" : "ffmpeg.tar.xz");
+            var tempFilePath = Path.Combine(Path.GetTempPath(), OSPlatform == OSPlatform.Windows ? "ffmpeg.zip" : "ffmpeg.tar.xz");
             var ffmpegDir = Path.Combine(Path.GetDirectoryName(_ffmpegPath) ?? string.Empty);
 
             try
             {
                 // Download FFmpeg file
-                using (var response = await _httpClient.GetAsync(ffmpegDownloadUrl, HttpCompletionOption.ResponseHeadersRead))
+                using (var response = await HttpClient.GetAsync(ffmpegDownloadUrl, HttpCompletionOption.ResponseHeadersRead))
                 using (var fileStream = new FileStream(tempFilePath, FileMode.Create, FileAccess.Write, FileShare.None))
                 {
                     await response.Content.CopyToAsync(fileStream);
-                    _logger.LogInformation("FFmpeg downloaded to temporary path {TempFilePath}", tempFilePath);
+                    Logger.LogInformation("FFmpeg downloaded to temporary path {TempFilePath}", tempFilePath);
                 }
 
                 Directory.CreateDirectory(ffmpegDir);
-                _logger.LogInformation("FFmpeg directory ensured at {FfmpegDir}", ffmpegDir);
+                Logger.LogInformation("FFmpeg directory ensured at {FfmpegDir}", ffmpegDir);
 
                 // Extract FFmpeg based on the OS
-                if (_isWindows)
+                if (OSPlatform == OSPlatform.Windows)
                 {
                     ZipFile.ExtractToDirectory(tempFilePath, ffmpegDir);
-                    _logger.LogInformation("FFmpeg extracted in Windows environment.");
+                    Logger.LogInformation("FFmpeg extracted in Windows environment.");
 
                     // Move extracted ffmpeg.exe to the expected path
                     var extractedPath = Directory.GetFiles(ffmpegDir, "ffmpeg.exe", SearchOption.AllDirectories).FirstOrDefault();
                     if (extractedPath != null)
                     {
                         File.Move(extractedPath, _ffmpegPath, true);
-                        _logger.LogInformation("FFmpeg moved to final path {FfmpegPath}", _ffmpegPath);
+                        Logger.LogInformation("FFmpeg moved to final path {FfmpegPath}", _ffmpegPath);
                     }
                 }
                 else
@@ -315,7 +322,7 @@ public partial class DownloadService
                     var extractionDir = Path.Combine(ffmpegDir, "extracted");
                     Directory.CreateDirectory(extractionDir);
 
-                    _logger.LogInformation("Starting extraction of FFmpeg in Linux environment.");
+                    Logger.LogInformation("Starting extraction of FFmpeg in Linux environment.");
 
                     var tarProcess = new Process
                     {
@@ -336,18 +343,18 @@ public partial class DownloadService
                     if (tarProcess.ExitCode != 0)
                     {
                         string error = await tarProcess.StandardError.ReadToEndAsync();
-                        _logger.LogError("Error extracting FFmpeg: {Error}", error);
+                        Logger.LogError("Error extracting FFmpeg: {Error}", error);
                         return;
                     }
 
-                    _logger.LogInformation("FFmpeg extraction completed.");
+                    Logger.LogInformation("FFmpeg extraction completed.");
 
                     // Locate the extracted FFmpeg binary
                     var extractedPath = Directory.GetFiles(extractionDir, "ffmpeg", SearchOption.AllDirectories).FirstOrDefault();
                     if (extractedPath != null)
                     {
                         File.Move(extractedPath, _ffmpegPath, true);
-                        _logger.LogInformation("FFmpeg moved to final path {FfmpegPath}", _ffmpegPath);
+                        Logger.LogInformation("FFmpeg moved to final path {FfmpegPath}", _ffmpegPath);
 
                         // Ensure the binary is executable
                         var chmodProcess = new Process
@@ -365,39 +372,39 @@ public partial class DownloadService
 
                         chmodProcess.Start();
                         await chmodProcess.WaitForExitAsync();
-                        _logger.LogInformation("Executable permissions set for FFmpeg at {FfmpegPath}", _ffmpegPath);
+                        Logger.LogInformation("Executable permissions set for FFmpeg at {FfmpegPath}", _ffmpegPath);
                     }
                     else
                     {
-                        _logger.LogError("FFmpeg binary not found after extraction.");
+                        Logger.LogError("FFmpeg binary not found after extraction.");
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred during FFmpeg download or extraction.");
+                Logger.LogError(ex, "An error occurred during FFmpeg download or extraction.");
             }
             finally
             {
                 if (File.Exists(tempFilePath))
                 {
                     File.Delete(tempFilePath);
-                    _logger.LogInformation("Temporary download file deleted at {TempFilePath}", tempFilePath);
+                    Logger.LogInformation("Temporary download file deleted at {TempFilePath}", tempFilePath);
                 }
 
                 var extractionDir = Path.Combine(ffmpegDir, "extracted");
                 if (Directory.Exists(extractionDir))
                 {
                     Directory.Delete(extractionDir, true);
-                    _logger.LogInformation("Temporary extraction directory deleted at {ExtractionDir}", extractionDir);
+                    Logger.LogInformation("Temporary extraction directory deleted at {ExtractionDir}", extractionDir);
                 }
             }
 
-            _logger.LogInformation("FFmpeg download and setup complete.");
+            Logger.LogInformation("FFmpeg download and setup complete.");
         }
         else
         {
-            _logger.LogInformation("FFmpeg already exists at path {FfmpegPath}. Skipping download.", _ffmpegPath);
+            Logger.LogInformation("FFmpeg already exists at path {FfmpegPath}. Skipping download.", _ffmpegPath);
         }
     }
 }

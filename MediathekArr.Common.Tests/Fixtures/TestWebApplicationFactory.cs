@@ -9,7 +9,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace MediathekArr.Tests.Fixtures;
 
-public class TestWebApplicationFactory : WebApplicationFactory<Program>
+public class AbstractTestWebApplicationFactory<TEntryPoint> : WebApplicationFactory<TEntryPoint> where TEntryPoint : class
 {
     // Do some setting up here if needed
 

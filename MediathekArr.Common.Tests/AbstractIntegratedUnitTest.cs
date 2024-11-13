@@ -4,15 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MediathekArr.Tests.Fixtures;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MediathekArr.Tests;
 
-public abstract class AbstractIntegratedUnitTest(TestWebApplicationFactory factory) : IClassFixture<TestWebApplicationFactory>
+public abstract class AbstractIntegratedUnitTest<TWebApplicationFactory, TEntryPoint>(TWebApplicationFactory factory) : IClassFixture<TWebApplicationFactory> 
+    where TEntryPoint : class
+    where TWebApplicationFactory : AbstractTestWebApplicationFactory<TEntryPoint>
 {
     #region Properties
-    public virtual TestWebApplicationFactory Factory { get; } = factory;
+    public virtual TWebApplicationFactory Factory { get; } = factory;
     public virtual IConfiguration Configuration => Factory.Services.GetRequiredService<IConfiguration>();
 
     public virtual IServiceScope Scope => Factory.Services.CreateScope();

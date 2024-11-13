@@ -7,8 +7,8 @@ using System.Text.RegularExpressions;
 namespace MediathekArr.Controllers;
 
 [ApiController]
-[Route("[controller]")]
-public partial class DownloadController(DownloadService downloadService) : ControllerBase
+[Route("api/[controller]")]
+public partial class DownloaderController(DownloadService downloadService) : ControllerBase
 {
     private readonly DownloadService _downloadService = downloadService;
 

@@ -1,4 +1,6 @@
 ﻿using System.Net.Http.Headers;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using TVDB;
 
 namespace MediathekArr.Handler

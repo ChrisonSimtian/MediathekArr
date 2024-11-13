@@ -13,9 +13,9 @@ using TVDB;
 
 namespace MediathekArr.Controllers.Tests;
 
-public class ShowControllerUnitTests : AbstractIntegratedUnitTest
+public class SeriesControllerUnitTests : MediathekArrApiIntegratedUnitTest
 {
-    public ShowControllerUnitTests(TestWebApplicationFactory factory) : base(factory)
+    public SeriesControllerUnitTests(MediathekArrApiWebApplicationFactory factory) : base(factory)
     {
         var mediathekArrContext = ScopedServiceProvider.GetRequiredService<MediathekArrContext>();
         var seriesClient = ScopedServiceProvider.GetRequiredService<SeriesClient>();

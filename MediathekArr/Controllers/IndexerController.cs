@@ -5,8 +5,8 @@ using MediathekArr.Services;
 namespace MediathekArr.Controllers
 {
     [ApiController]
-    [Route("api")]
-    public class TController(MediathekSearchService mediathekSearchService, ItemLookupService itemLookupService) : ControllerBase
+    [Route("api/[controller]")]
+    public class IndexerController(MediathekSearchService mediathekSearchService, ItemLookupService itemLookupService) : ControllerBase
     {
         public MediathekSearchService MediathekSearchService { get; } = mediathekSearchService;
         public ItemLookupService ItemLookupService { get; } = itemLookupService;

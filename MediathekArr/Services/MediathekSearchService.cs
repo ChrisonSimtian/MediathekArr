@@ -12,7 +12,7 @@ namespace MediathekArr.Services;
 public partial class MediathekSearchService(IHttpClientFactory httpClientFactory, IMemoryCache cache)
 {
     private readonly IMemoryCache _cache = cache;
-    private readonly HttpClient _httpClient = httpClientFactory.CreateClient(Constants.HttpClientNameConstants.TvdbClient);
+    private readonly HttpClient _httpClient = httpClientFactory.CreateClient(Constants.HttpClientNameConstants.MediathekArrClient);
     private readonly TimeSpan _cacheTimeSpan = TimeSpan.FromMinutes(55);
     private static readonly string[] SkipKeywords = ["(Audiodeskription)", "(klare Sprache)", "(Gebärdensprache)", "Trailer"];
     private static readonly string[] queryField = ["topic"];
