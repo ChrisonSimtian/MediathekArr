@@ -45,7 +45,7 @@ public class SeriesControllerUnitTests : MediathekArrApiIntegratedUnitTest
     public async Task GetSeriesData_Fact(int tvdbId)
     {
         // Arrange
-        var result = Controller.GetSeriesData(tvdbId);
+        var result = await Controller.GetSeriesData(tvdbId);
 
         // Act
 
@@ -58,7 +58,7 @@ public class SeriesControllerUnitTests : MediathekArrApiIntegratedUnitTest
     public async Task GetSeriesDataFromTvdb_Fact(int tvdbId)
     {
         // Arrange
-        var result = Controller.GetSeriesDataFromTvdb(tvdbId);
+        var result = await Controller.GetSeriesDataFromTVDB(tvdbId);
 
         // Act
 

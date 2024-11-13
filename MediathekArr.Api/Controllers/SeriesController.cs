@@ -26,35 +26,34 @@ public class SeriesController(MediathekArrContext context, SeriesClient seriesCl
     /// <summary>
     /// Fetch Series Information
     /// </summary>
-    /// <param name="tvdbId"></param>
-    /// <param name="debug"></param>
+    /// <param name="id"></param>
     /// <returns></returns>
-    [HttpGet("{tvdbId}")]
+    [HttpGet]
     [ResponseCache(Duration = Constants.CacheConstants.ResponseCacheDuration)]
-    public async Task<IActionResult> GetSeriesData(int tvdbId)
+    public async Task<IActionResult> GetSeriesData([FromQuery]int id)
     {
         try
         {
-            if(!Cache.TryGetValue(tvdbId, out Series seriesData))
+            if(!Cache.TryGetValue(id, out Series? seriesData))
             {
-                bool existsInDatabase = await Context.SeriesCache.AnyAsync(r => r.SeriesId == tvdbId);
-                if (!existsInDatabase) await GetSeriesDataFromTvdb(tvdbId);
+                bool existsInDatabase = await Context.SeriesCache.AnyAsync(r => r.SeriesId == id);
+                if (!existsInDatabase) await GetSeriesDataFromTVDB(id);
 
                 /* Fetch from Database */
-                seriesData = await Context.SeriesCache.FirstAsync(r => r.SeriesId == tvdbId);
+                seriesData = await Context.SeriesCache.FirstAsync(r => r.SeriesId == id);
 
-                Cache.Set(tvdbId, seriesData, Factories.MemoryCacheEntryOptionsFactory.Default);
+                Cache.Set(id, seriesData, Factories.MemoryCacheEntryOptionsFactory.Default);
             }
             
             // Return cached data if available and not expired
-            var episodes = await Context.Episodes.Where(r => r.Series.SeriesId == tvdbId).ToListAsync();
+            var episodes = await Context.Episodes.Where(r => r.Series.SeriesId == id).ToListAsync();
 
             var response = new
             {
                 status = "success",
                 data = new
                 {
-                    id = tvdbId,
+                    id,
                     name = seriesData.Name,
                     german_name = seriesData.GermanName,
                     aliases = JsonSerializer.Deserialize<string[]>(seriesData.Aliases),
@@ -80,15 +79,15 @@ public class SeriesController(MediathekArrContext context, SeriesClient seriesCl
     /// <summary>
     /// Fetch Series Data from TVDB API
     /// </summary>
-    /// <param name="tvdbId"></param>
-    /// <param name="debug"></param>
+    /// <param name="id"></param>
     /// <returns></returns>
-    public async Task<IActionResult> GetSeriesDataFromTvdb(int tvdbId)
+    [ResponseCache(Duration = Constants.CacheConstants.ResponseCacheDuration)]
+    public async Task<IActionResult> GetSeriesDataFromTVDB(int id)
     {
         // TODO: This needs refactoring as it returns IActionResult where instead it should just grab everything and return it plan
         try
         {
-            var seriesResult = await SeriesClient.ExtendedAsync(tvdbId, Meta4.Episodes, true);
+            var seriesResult = await SeriesClient.ExtendedAsync(id, Meta4.Episodes, true);
 
             if (seriesResult.Status != "success") return BadRequest(new { status = "error", message = "Failed to fetch data from TVDB" });
 
