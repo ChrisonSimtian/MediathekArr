@@ -4,6 +4,7 @@ using MediathekArr.Tests;
 using MediathekArr.Tests.Fixtures;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace TVDB.Tests;
 
@@ -28,6 +29,12 @@ public class LoginClientUnitTests(TestWebApplicationFactory factory) : AbstractI
         // Assert
         loginResult.Status.Should().Be("success", "Bearer Token for TVDB not generated");
         loginResult.Data.Token.Should().NotBeEmpty("Bearer Token for TVDB not generated");
+
+        // TODO: Properly implement JWT
+        // https://learn.microsoft.com/en-us/dotnet/api/microsoft.identitymodel.jsonwebtokens.jsonwebtoken?view=msal-web-dotnet-latest
+        var token = new JsonWebToken(loginResult.Data.Token);
+        token.Should().NotBeNull();
+        token.ValidTo.Should().BeOnOrAfter(DateTime.UtcNow);
     }
 
     [Fact]

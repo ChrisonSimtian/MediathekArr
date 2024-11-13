@@ -42,10 +42,23 @@ public class ShowControllerUnitTests : AbstractIntegratedUnitTest
 
     [Theory]
     [InlineData(291180)]
-    public async Task GetSeriesData(int tvdbId)
+    public async Task GetSeriesData_Fact(int tvdbId)
     {
         // Arrange
         var result = Controller.GetSeriesData(tvdbId);
+
+        // Act
+
+        // Assert
+        result.Should().NotBeNull();
+    }
+
+    [Theory]
+    [InlineData(291180)]
+    public async Task GetSeriesDataFromTvdb_Fact(int tvdbId)
+    {
+        // Arrange
+        var result = Controller.GetSeriesDataFromTvdb(tvdbId);
 
         // Act
 

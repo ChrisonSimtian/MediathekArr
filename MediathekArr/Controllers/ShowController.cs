@@ -83,7 +83,7 @@ public class SeriesController(MediathekArrContext context, SeriesClient seriesCl
     /// <param name="tvdbId"></param>
     /// <param name="debug"></param>
     /// <returns></returns>
-    private async Task<IActionResult> GetSeriesDataFromTvdb(int tvdbId)
+    public async Task<IActionResult> GetSeriesDataFromTvdb(int tvdbId)
     {
         // TODO: This needs refactoring as it returns IActionResult where instead it should just grab everything and return it plan
         try
