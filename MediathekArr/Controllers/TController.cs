@@ -8,8 +8,8 @@ namespace MediathekArr.Controllers
     [Route("api")]
     public class TController(MediathekSearchService mediathekSearchService, ItemLookupService itemLookupService) : ControllerBase
     {
-        private readonly MediathekSearchService _mediathekSearchService = mediathekSearchService;
-        private readonly ItemLookupService _itemLookupService = itemLookupService;
+        public MediathekSearchService MediathekSearchService { get; } = mediathekSearchService;
+        public ItemLookupService ItemLookupService { get; } = itemLookupService;
 
         [HttpGet]
         public async Task<IActionResult> GetCapsXml([FromQuery] string t)
@@ -53,15 +53,15 @@ namespace MediathekArr.Controllers
                 {
                     if (!string.IsNullOrEmpty(tvdbid) && int.TryParse(tvdbid, out var parsedTvdbid))
                     {
-                        var tvdbData = (await _itemLookupService.GetShowInfoByTvdbId(parsedTvdbid)).Data;
+                        var tvdbData = (await ItemLookupService.GetShowInfoByTvdbId(parsedTvdbid)).Data;
 
-                        string searchResults = await _mediathekSearchService.FetchSearchResultsFromApiById(tvdbData, season, episode);
+                        string searchResults = await MediathekSearchService.FetchSearchResultsFromApiById(tvdbData, season, episode);
 
                         return Content(searchResults, "application/xml", Encoding.UTF8);
                     }
                     else
                     {
-                        string searchResults = await _mediathekSearchService.FetchSearchResultsFromApiByString(q, season);
+                        string searchResults = await MediathekSearchService.FetchSearchResultsFromApiByString(q, season);
 
                         return Content(searchResults, "application/xml", Encoding.UTF8);
                     }
