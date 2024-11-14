@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml.Serialization;
+using MediathekArr.Common.Extensions;
 using MediathekArr.Models;
 using Microsoft.Extensions.Caching.Memory;
 using Guid = MediathekArr.Models.Guid;
@@ -13,9 +14,10 @@ public partial class MediathekSearchService(IHttpClientFactory httpClientFactory
 {
     private readonly IMemoryCache _cache = cache;
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient(Constants.HttpClientNameConstants.MediathekArrClient);
-    private readonly TimeSpan _cacheTimeSpan = TimeSpan.FromMinutes(55);
+    private readonly TimeSpan _cacheTimeSpan = TimeSpan.FromMinutes(Constants.CacheConstants.ResponseCacheDuration);
     private static readonly string[] SkipKeywords = ["Audiodeskription", "(klare Sprache)", "(Gebärdensprache)", "Trailer", "Outtakes:"];
     private static readonly string[] queryField = ["topic"];
+
     public async Task<string> FetchSearchResultsFromApiById(TvdbData tvdbData, string? season, string? episodeNumber)
     {
         var cacheKey = $"tvdb_{tvdbData.Id}_{season ?? "null"}_{episodeNumber ?? "null"}";
@@ -135,7 +137,6 @@ public partial class MediathekSearchService(IHttpClientFactory httpClientFactory
         return filteredApiResponse;
     }
 
-
     private static List<ApiResultItem> FilterByRuntime(List<ApiResultItem> results, int? runtime)
     {
         if (runtime is null || runtime is 0)
@@ -181,11 +182,11 @@ public partial class MediathekSearchService(IHttpClientFactory httpClientFactory
 
     private static List<ApiResultItem> FilterByEpisodeTitleMatch(List<ApiResultItem> results, string episodeName)
     {
-        var normalizedEpisodeName = NormalizeString(episodeName);
+        var normalizedEpisodeName = episodeName.NormalizeString();
 
         return results.Where(item =>
         {
-            var normalizedTitle = NormalizeString(item.Title);
+            var normalizedTitle = item.Title.NormalizeString();
             if (normalizedTitle.Contains(normalizedEpisodeName, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
@@ -210,13 +211,6 @@ public partial class MediathekSearchService(IHttpClientFactory httpClientFactory
         {
             return item.Title.Contains($"S{zeroBasedSeason}") && item.Title.Contains($"E{zeroBasedEpisode}");
         }).ToList();
-    }
-
-    // Normalize a string to remove special characters and retain only A-Z, äöüÄÖÜß
-    private static string NormalizeString(string input)
-    {
-        var regex = NormalizeRegex();
-        return regex.Replace(input, "").ToLowerInvariant();
     }
 
     public async Task<string> FetchSearchResultsFromApiByString(string? q, string? season)
@@ -414,7 +408,7 @@ public partial class MediathekSearchService(IHttpClientFactory httpClientFactory
                      .Replace("Ü", "Ue");
 
         // Remove unwanted characters
-        title = TitleRegexUnd().Replace(title, "und");
+        title = title.Replace("&", "und");
         title = TitleRegexSymbols().Replace(title, ""); // Remove various symbols
         title = TitleRegexWhitespace().Replace(title, ".").Replace("..", ".");
 
@@ -456,16 +450,6 @@ public partial class MediathekSearchService(IHttpClientFactory httpClientFactory
             },
             Attributes = GenerateAttributes(yearSeason ?? season, categoryValues)
         };
-    }
-
-    private static string TranslateTitle(string title, TvdbData? tvdbData)
-    {
-        if (tvdbData is null)
-        {
-            return title;
-        }
-
-        return title.Replace(tvdbData.GermanName, tvdbData.Name, StringComparison.OrdinalIgnoreCase);
     }
 
     // TODO refactor and make this look good, It's too late right now:D
@@ -624,16 +608,10 @@ public partial class MediathekSearchService(IHttpClientFactory httpClientFactory
         return TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, berlinTimeZone);
     }
 
-
-
-    [GeneratedRegex(@"[&]")]
-    private static partial Regex TitleRegexUnd();
     [GeneratedRegex(@"[/:;""'@#?$%^*+=!<>,()]")]
     private static partial Regex TitleRegexSymbols();
     [GeneratedRegex(@"\s+")]
     private static partial Regex TitleRegexWhitespace();
     [GeneratedRegex(@"Folge\s*\d+:\s*")]
     private static partial Regex EpisodeRegex();
-    [GeneratedRegex("[^a-zA-ZäöüÄÖÜß]")]
-    private static partial Regex NormalizeRegex();
 }
