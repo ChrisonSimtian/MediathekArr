@@ -1,7 +1,30 @@
+using System.Diagnostics;
+using System.Net;
 using MediathekArr.Services;
 using Scalar.AspNetCore;
+using Yarp.ReverseProxy.Forwarder;
 
 var builder = WebApplication.CreateBuilder(args);
+
+/* Set up YARP to forward calls to /api to MediathekArr Server  */
+builder.Services.AddHttpForwarder();
+
+// Configure our own HttpMessageInvoker for outbound calls for proxy operations
+var httpClient = new HttpMessageInvoker(new SocketsHttpHandler
+{
+    UseProxy = false,
+    AllowAutoRedirect = false,
+    AutomaticDecompression = DecompressionMethods.None,
+    UseCookies = false,
+    EnableMultipleHttp2Connections = true,
+    ActivityHeadersPropagator = new ReverseProxyPropagator(DistributedContextPropagator.Current),
+    ConnectTimeout = TimeSpan.FromSeconds(15),
+});
+
+// Setup our own request transform class
+var transformer = HttpTransformer.Default;
+var requestConfig = new ForwarderRequestConfig { ActivityTimeout = TimeSpan.FromSeconds(100) };
+
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
@@ -43,6 +66,20 @@ app.Use(async (context, next) =>
     await next.Invoke();
 });
 
+/* Redirect all calls to /api to MediathekArr Server */
+app.Map("/api", async (HttpContext httpContext, IHttpForwarder forwarder) =>
+{
+    var error = await forwarder.SendAsync(httpContext, "http://localhost:5008", httpClient, requestConfig, transformer);
+
+    /* Log failed forwarding */
+    if(error != ForwarderError.None)
+    {
+        var errorFeature = httpContext.GetForwarderErrorFeature();
+        var exception = errorFeature.Exception;
+        var logger = app.Services.GetRequiredService<ILogger<Program>>();
+        logger.LogError("Failed forwarding request: {method} {url} {exception}", httpContext.Request.Method, httpContext.Request.Path + httpContext.Request.QueryString, exception.Message);
+    }
+});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
