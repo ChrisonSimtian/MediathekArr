@@ -1,4 +1,5 @@
 ﻿using MediathekArr.Models;
+using MediathekArr.Models.Sabnzbd;
 using MediathekArr.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Reflection;
@@ -76,9 +77,9 @@ public partial class DownloadController(DownloadService downloadService) : Contr
     {
         var queueItems = _downloadService.GetQueue();
 
-        var queue = new SabnzbdQueue
+        var queue = new Queue
         {
-            Items = queueItems.ToList()
+            Items = [.. queueItems]
         };
 
         return new QueueWrapper
@@ -91,9 +92,9 @@ public partial class DownloadController(DownloadService downloadService) : Contr
     {
         var historytems = _downloadService.GetHistory();
 
-        var history = new SabnzbdHistory
+        var history = new History
         {
-            Items = historytems.ToList()
+            Items = [.. historytems]
         };
 
         return new HistoryWrapper

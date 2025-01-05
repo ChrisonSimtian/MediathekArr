@@ -3,10 +3,11 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml.Serialization;
-using MediathekArrLib.Models;
-using MediathekArrLib.Models.Newznab;
+using MediathekArr.Models;
+using MediathekArr.Models.Newznab;
+using MediathekArr.Models.Tvdb;
 using Microsoft.Extensions.Caching.Memory;
-using Guid = MediathekArrLib.Models.Newznab.Guid;
+using Guid = MediathekArr.Models.Newznab.Guid;
 
 namespace MediathekArr.Services
 {
@@ -17,7 +18,7 @@ namespace MediathekArr.Services
         private readonly TimeSpan _cacheTimeSpan = TimeSpan.FromMinutes(55);
         private static readonly string[] SkipKeywords = ["Audiodeskription", "(klare Sprache)", "(Gebärdensprache)", "Trailer", "Outtakes:"];
         private static readonly string[] queryField = ["topic"];
-        public async Task<string> FetchSearchResultsFromApiById(TvdbData tvdbData, string? season, string? episodeNumber)
+        public async Task<string> FetchSearchResultsFromApiById(Data tvdbData, string? season, string? episodeNumber)
         {
             var cacheKey = $"tvdb_{tvdbData.Id}_{season ?? "null"}_{episodeNumber ?? "null"}";
 
@@ -27,7 +28,7 @@ namespace MediathekArr.Services
         }
 
         // Find correct episode in tvdbData
-        TvdbEpisode? episode;
+        Episode? episode;
         if (season?.Length == 4 && (episodeNumber?.Contains('/') ?? false))
         {
             var episodeNumberSplitted = episodeNumber?.Split('/');
@@ -83,7 +84,7 @@ namespace MediathekArr.Services
         return null;
     }
 
-    private static MediathekApiResponse? ApplyFilters(string apiResponse, TvdbEpisode episode)
+    private static MediathekApiResponse? ApplyFilters(string apiResponse, Episode episode)
     {
         var responseObject = JsonSerializer.Deserialize<MediathekApiResponse>(apiResponse);
 
@@ -275,7 +276,7 @@ namespace MediathekArr.Services
         return null;
     }
 
-    private string ConvertIdSearchApiResponseToRss(MediathekApiResponse? filteredResponse, string season, string episode, TvdbData tvdbData)
+    private string ConvertIdSearchApiResponseToRss(MediathekApiResponse? filteredResponse, string season, string episode, Data tvdbData)
     {
         if (filteredResponse is null || filteredResponse.Result.Results == null)
         {
@@ -356,7 +357,7 @@ namespace MediathekArr.Services
         };
     }
 
-    private List<Item> GenerateRssItems(ApiResultItem item, string? season, string? episode, TvdbData? tvdbData = null)
+    private List<Item> GenerateRssItems(ApiResultItem item, string? season, string? episode, Data? tvdbData = null)
     {
         var items = new List<Item>();
 
@@ -381,7 +382,7 @@ namespace MediathekArr.Services
         return items;
     }
 
-    private List<Item> CreateRssItems(ApiResultItem item, string? season, string? episode, TvdbData? tvdbData, string quality, double sizeMultiplier, string category, string[] categoryValues, string url)
+    private List<Item> CreateRssItems(ApiResultItem item, string? season, string? episode, Data? tvdbData, string quality, double sizeMultiplier, string category, string[] categoryValues, string url)
     {
         var items = new List<Item>();
 
@@ -423,7 +424,7 @@ namespace MediathekArr.Services
     }
 
 
-    private Item CreateRssItem(ApiResultItem item, string? yearSeason, string? season, string? episode, TvdbData? tvdbData, string quality, double sizeMultiplier, string category, string[] categoryValues, string url, string? formattedDate = null)
+    private Item CreateRssItem(ApiResultItem item, string? yearSeason, string? season, string? episode, Data? tvdbData, string quality, double sizeMultiplier, string category, string[] categoryValues, string url, string? formattedDate = null)
     {
         var adjustedSize = (long)(item.Size * sizeMultiplier);
         var parsedTitle = GenerateTitle(item.Topic, item.Title, quality, formattedDate, season, episode);
@@ -459,7 +460,7 @@ namespace MediathekArr.Services
         };
     }
 
-    private static string TranslateTitle(string title, TvdbData? tvdbData)
+    private static string TranslateTitle(string title, Data? tvdbData)
     {
         if (tvdbData is null)
         {
@@ -573,18 +574,18 @@ namespace MediathekArr.Services
         return string.Empty;
     }
 
-    private List<MediathekArrLib.Models.Newznab.Attribute> GenerateAttributes(string? season, string[] categoryValues)
+    private List<MediathekArr.Models.Newznab.Attribute> GenerateAttributes(string? season, string[] categoryValues)
     {
-        var attributes = new List<MediathekArrLib.Models.Newznab.Attribute>();
+        var attributes = new List<MediathekArr.Models.Newznab.Attribute>();
 
         foreach (var categoryValue in categoryValues)
         {
-            attributes.Add(new MediathekArrLib.Models.Newznab.Attribute { Name = "category", Value = categoryValue });
+            attributes.Add(new MediathekArr.Models.Newznab.Attribute { Name = "category", Value = categoryValue });
         }
 
         if (season != null)
         {
-            attributes.Add(new MediathekArrLib.Models.Newznab.Attribute { Name = "season", Value = season });
+            attributes.Add(new MediathekArr.Models.Newznab.Attribute { Name = "season", Value = season });
         }
 
         return attributes;

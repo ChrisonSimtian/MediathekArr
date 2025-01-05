@@ -1,8 +1,8 @@
-﻿using MediathekArrLib.Models;
-using MediathekArrLib.Models.Newznab;
+﻿using MediathekArr.Models;
+using MediathekArr.Models.Newznab;
 using System.Xml.Serialization;
 
-namespace MediathekArrLib.Utilities;
+namespace MediathekArr.Utilities;
 public static class NewznabUtils
 {
     public static List<Models.Newznab.Attribute> GenerateAttributes(string? season, string[] categoryValues)

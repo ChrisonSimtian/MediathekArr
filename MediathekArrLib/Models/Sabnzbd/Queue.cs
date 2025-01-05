@@ -1,12 +1,12 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace MediathekArr.Models;
+namespace MediathekArr.Models.Sabnzbd;
 
-public class SabnzbdQueue
+public class Queue
 {
     [JsonPropertyName("paused")]
     public bool Paused => false;
 
     [JsonPropertyName("slots")]
-    public List<SabnzbdQueueItem> Items { get; set; }
+    public List<QueueItem> Items { get; set; }
 }

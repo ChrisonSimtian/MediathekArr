@@ -1,8 +1,8 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace MediathekArr.Models;
+namespace MediathekArr.Models.Sabnzbd;
 
-public class SabnzbdHistoryItem
+public class HistoryItem
 {
     [JsonPropertyName("fail_message")]
     public string FailMessage { get; set; }
@@ -23,8 +23,8 @@ public class SabnzbdHistoryItem
     public string Storage { get; set; }
 
     [JsonPropertyName("status")]
-    [JsonConverter(typeof(JsonStringEnumConverter))] 
-    public SabnzbdDownloadStatus Status { get; set; }
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public DownloadStatus Status { get; set; }
 
     [JsonPropertyName("nzo_id")]
     public string Id { get; set; }

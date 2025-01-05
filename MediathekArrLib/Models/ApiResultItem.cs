@@ -1,7 +1,7 @@
-﻿using MediathekArrLib.Utilities;
+﻿using MediathekArr.Utilities;
 using System.Text.Json.Serialization;
 
-namespace MediathekArrLib.Models;
+namespace MediathekArr.Models;
 
 public class ApiResultItem
 {

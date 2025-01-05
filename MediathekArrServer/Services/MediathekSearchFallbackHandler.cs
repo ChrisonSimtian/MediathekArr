@@ -1,17 +1,18 @@
-﻿using MediathekArrLib.Models;
-using MediathekArrLib.Models.Newznab;
-using MediathekArrLib.Utilities;
+﻿using MediathekArr.Models;
+using MediathekArr.Models.Newznab;
+using MediathekArr.Models.Tvdb;
+using MediathekArr.Utilities;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Guid = MediathekArrLib.Models.Newznab.Guid;
+using Guid = MediathekArr.Models.Newznab.Guid;
 
 namespace MediathekArrServer.Services;
 
 public partial class MediathekSearchFallbackHandler
 {
-    public static List<Item> GetFallbackSearchResultItemsById(string? apiResponse, TvdbEpisode episode, TvdbData tvdbData)
+    public static List<Item> GetFallbackSearchResultItemsById(string? apiResponse, Episode episode, Data tvdbData)
     {
         if (string.IsNullOrWhiteSpace(apiResponse))
         {
@@ -35,7 +36,7 @@ public partial class MediathekSearchFallbackHandler
     }
 
 
-    private static List<Item> GenerateRssItems(ApiResultItem item, string? season, string? episode, TvdbData? tvdbData = null)
+    private static List<Item> GenerateRssItems(ApiResultItem item, string? season, string? episode, Data? tvdbData = null)
     {
         var items = new List<Item>();
 
@@ -60,7 +61,7 @@ public partial class MediathekSearchFallbackHandler
         return items;
     }
 
-    private static List<Item> CreateRssItems(ApiResultItem item, string? season, string? episode, TvdbData? tvdbData, string quality, double sizeMultiplier, string category, string[] categoryValues, string url)
+    private static List<Item> CreateRssItems(ApiResultItem item, string? season, string? episode, Data? tvdbData, string quality, double sizeMultiplier, string category, string[] categoryValues, string url)
     {
         var items = new List<Item>();
 
@@ -82,7 +83,7 @@ public partial class MediathekSearchFallbackHandler
         return items;
     }
 
-    private static Item CreateRssItem(ApiResultItem item, string? yearSeason, string? season, string? episode, TvdbData? tvdbData, string quality, double sizeMultiplier, string category, string[] categoryValues, string url, string? formattedDate = null)
+    private static Item CreateRssItem(ApiResultItem item, string? yearSeason, string? season, string? episode, Data? tvdbData, string quality, double sizeMultiplier, string category, string[] categoryValues, string url, string? formattedDate = null)
     {
         var adjustedSize = (long)(item.Size * sizeMultiplier);
         var parsedTitle = GenerateTitle(item.Topic, item.Title, quality, formattedDate, season, episode);
@@ -196,7 +197,7 @@ public partial class MediathekSearchFallbackHandler
         return title;
     }
 
-    private static MediathekApiResponse? ApplyFilters(string apiResponse, TvdbEpisode episode)
+    private static MediathekApiResponse? ApplyFilters(string apiResponse, Episode episode)
     {
         var responseObject = JsonSerializer.Deserialize<MediathekApiResponse>(apiResponse);
 
