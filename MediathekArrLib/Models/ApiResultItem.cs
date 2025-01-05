@@ -1,4 +1,4 @@
-﻿using MediathekArr.Utilities;
+﻿using MediathekArr.Converters;
 using System.Text.Json.Serialization;
 
 namespace MediathekArr.Models;

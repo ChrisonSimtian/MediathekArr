@@ -25,6 +25,7 @@ public static class NewznabUtils
 
         return attributes;
     }
+
     public static string SerializeRss(Rss rss)
     {
         var serializer = new XmlSerializer(typeof(Rss));

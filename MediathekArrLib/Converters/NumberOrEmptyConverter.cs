@@ -1,14 +1,14 @@
 ﻿using System.Text.Json.Serialization;
 using System.Text.Json;
 
-namespace MediathekArr.Utilities;
+namespace MediathekArr.Converters;
 
 public class NumberOrEmptyConverter<T> : JsonConverter<T>
     where T : struct, IConvertible
 {
     public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        if (reader.TokenType == JsonTokenType.Null || (reader.TokenType == JsonTokenType.String && reader.GetString() == ""))
+        if (reader.TokenType == JsonTokenType.Null || reader.TokenType == JsonTokenType.String && reader.GetString() == "")
         {
             return default; // Return default value, which will be 0 for int, long, etc.
         }
