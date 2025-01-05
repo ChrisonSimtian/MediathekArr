@@ -1,3 +1,4 @@
+using MediathekArr.Utilities;
 using MediathekArrServer.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
@@ -123,6 +124,6 @@ public class TController(MediathekSearchService mediathekSearchService, ItemLook
         // Set the .nzb file name
         var nzbFileName = $"mediathek-{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.nzb";
 
-        return File(fileContent, "application/x-nzb", nzbFileName);
+        return File(fileContent, NewznabUtils.Application.Nzb, nzbFileName);
     }
 }

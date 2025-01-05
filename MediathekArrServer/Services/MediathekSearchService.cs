@@ -794,7 +794,7 @@ public partial class MediathekSearchService(IHttpClientFactory httpClientFactory
             {
                 Url = fakeDownloadUrl,
                 Length = adjustedSize,
-                Type = "application/x-nzb"
+                Type = NewznabUtils.Application.Nzb
             },
             Attributes = NewznabUtils.GenerateAttributes(matchedEpisodeInfo.Episode.PaddedSeason, categoryValues)
         };

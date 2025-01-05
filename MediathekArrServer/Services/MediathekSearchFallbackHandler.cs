@@ -113,7 +113,7 @@ public partial class MediathekSearchFallbackHandler
             {
                 Url = fakeDownloadUrl,
                 Length = adjustedSize,
-                Type = "application/x-nzb"
+                Type = NewznabUtils.Application.Nzb
             },
             Attributes = NewznabUtils.GenerateAttributes(yearSeason ?? season, categoryValues)
         };

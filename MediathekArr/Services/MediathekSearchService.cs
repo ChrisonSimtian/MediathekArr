@@ -6,6 +6,7 @@ using System.Xml.Serialization;
 using MediathekArr.Models;
 using MediathekArr.Models.Newznab;
 using MediathekArr.Models.Tvdb;
+using MediathekArr.Utilities;
 using Microsoft.Extensions.Caching.Memory;
 using Guid = MediathekArr.Models.Newznab.Guid;
 
@@ -454,7 +455,7 @@ namespace MediathekArr.Services
             {
                 Url = fakeDownloadUrl,
                 Length = adjustedSize,
-                Type = "application/x-nzb"
+                Type = NewznabUtils.Application.Nzb
             },
             Attributes = GenerateAttributes(yearSeason ?? season, categoryValues)
         };

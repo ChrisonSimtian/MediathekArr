@@ -1,10 +1,14 @@
-﻿using MediathekArr.Models;
-using MediathekArr.Models.Newznab;
+﻿using MediathekArr.Models.Newznab;
 using System.Xml.Serialization;
 
 namespace MediathekArr.Utilities;
 public static class NewznabUtils
 {
+    public static class Application
+    {
+        public const string Nzb = "application/x-nzb";
+    }
+
     public static List<Models.Newznab.Attribute> GenerateAttributes(string? season, string[] categoryValues)
     {
         var attributes = new List<Models.Newznab.Attribute>();
