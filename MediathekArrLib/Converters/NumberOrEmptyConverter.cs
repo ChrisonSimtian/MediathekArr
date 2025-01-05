@@ -42,6 +42,9 @@ public class NumberOrEmptyConverter<T> : JsonConverter<T>
                     {
                         return (T)(object)longValue;
                     }
+
+                    // Throw FormatException if we cant parse into any supported number type
+                    throw new FormatException($"{stringValue} is not a valid Number");
                 }
             }
         }

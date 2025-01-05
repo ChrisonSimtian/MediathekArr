@@ -44,21 +44,5 @@ public static class NewznabUtils
         return result;
     }
 
-    public static Rss GetEmptyRssResult()
-    {
-        return new Rss
-        {
-            Channel = new Channel
-            {
-                Title = "MediathekArr",
-                Description = "MediathekArr API results",
-                Response = new Response
-                {
-                    Offset = 0,
-                    Total = 0
-                },
-                Items = []
-            }
-        };
-    }
+    public static Rss GetEmptyRssResult() => Factories.RssFactory.Empty;
 }
