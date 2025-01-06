@@ -21,7 +21,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ContainerPort Include="8081" />
+	  <ContainerPort Include="5008" />
 	</ItemGroup>
 
 	<ItemGroup>
