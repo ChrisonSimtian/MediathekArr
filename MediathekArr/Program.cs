@@ -67,19 +67,19 @@ app.Use(async (context, next) =>
 });
 
 /* Redirect all calls to /api to MediathekArr Server */
-app.Map("/api", async (HttpContext httpContext, IHttpForwarder forwarder) =>
-{
-    var error = await forwarder.SendAsync(httpContext, "http://localhost:5008", httpClient, requestConfig, transformer);
+//app.Map("/api", async (HttpContext httpContext, IHttpForwarder forwarder) =>
+//{
+//    var error = await forwarder.SendAsync(httpContext, "http://localhost:5008", httpClient, requestConfig, transformer);
 
-    /* Log failed forwarding */
-    if(error != ForwarderError.None)
-    {
-        var errorFeature = httpContext.GetForwarderErrorFeature();
-        var exception = errorFeature.Exception;
-        var logger = app.Services.GetRequiredService<ILogger<Program>>();
-        logger.LogError("Failed forwarding request: {method} {url} {exception}", httpContext.Request.Method, httpContext.Request.Path + httpContext.Request.QueryString, exception.Message);
-    }
-});
+//    /* Log failed forwarding */
+//    if(error != ForwarderError.None)
+//    {
+//        var errorFeature = httpContext.GetForwarderErrorFeature();
+//        var exception = errorFeature.Exception;
+//        var logger = app.Services.GetRequiredService<ILogger<Program>>();
+//        logger.LogError("Failed forwarding request: {method} {url} {exception}", httpContext.Request.Method, httpContext.Request.Path + httpContext.Request.QueryString, exception.Message);
+//    }
+//});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
