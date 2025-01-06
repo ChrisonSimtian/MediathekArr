@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using TvdbClient.Configuration;
@@ -22,26 +23,26 @@ public class TvdbTokenProvider(TvdbConfiguration options, ILogger<TvdbTokenProvi
     /// <inheritdoc/>
     public async Task<Token> AcquireTokenAsync(CancellationToken cancellationToken = default)
     {
-        /* Refresh existing Token */
-        if (Token is not null && Token.IsTokenExpired) await RefreshTokenAsync(cancellationToken);
-
         /* Acquire new Token */
         if (Token is null || Token.IsTokenExpired)
         {
             try
             {
                 var httpClient = new HttpClient();
-                var requestBody = new FormUrlEncodedContent(
-                    [
-                    new KeyValuePair<string, string>("apiKey", Options.ApiKey),
-                    ]);
+                var requestBody = new StringContent(JsonSerializer.Serialize(new { apikey = Options.ApiKey }), Encoding.UTF8, System.Net.Mime.MediaTypeNames.Application.Json);
 
-                var response = await httpClient.PostAsync(Options.TokenUrl, requestBody);
+                var response = await httpClient.PostAsync(Options.TokenUrl, requestBody, cancellationToken);
                 if (!response.IsSuccessStatusCode) Logger.LogError("Failed acquiring Token");
                 response.EnsureSuccessStatusCode();
 
                 var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
-                var token = System.Text.Json.JsonSerializer.Deserialize<Token>(responseBody);
+                var responseData = JsonSerializer.Deserialize<ApiResponseWrapper<Token>>(responseBody);
+                if(!responseData.IsSuccess)
+                {
+                    Logger.LogError($"Failed acquiring Token. {responseData.ErrorMessage}");
+                    throw new Exception($"Failed acquiring Token. {responseData.ErrorMessage}");
+                }
+                var token = responseData.Data;
                 if (token is null)
                 {
                     Logger.LogError("Failed deserializing Token response");
@@ -58,8 +59,5 @@ public class TvdbTokenProvider(TvdbConfiguration options, ILogger<TvdbTokenProvi
 
         return Token;
     }
-
-    /// <inheritdoc/>
-    public async Task RefreshTokenAsync(CancellationToken cancellationToken = default) => await AcquireTokenAsync(cancellationToken);
     #endregion
 }

@@ -18,12 +18,5 @@ public interface ITokenProvider
     /// </summary>
     /// <returns></returns>
     public Task<Token> AcquireTokenAsync(CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Refresh the existing <see cref="Token"/>
-    /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public Task RefreshTokenAsync(CancellationToken cancellationToken = default);
     #endregion
 }
