@@ -1,0 +1,29 @@
+﻿using Newtonsoft.Json.Linq;
+using TvdbClient.Models;
+
+namespace TvdbClient.Handlers;
+
+/// <summary>
+/// Provider for Tokens
+/// </summary>
+public interface ITokenProvider
+{
+    #region Properties
+    Token Token { get; }
+    #endregion
+
+    #region Methods
+    /// <summary>
+    /// Acquire a <see cref="Token"/>
+    /// </summary>
+    /// <returns></returns>
+    public Task<Token> AcquireTokenAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Refresh the existing <see cref="Token"/>
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public Task RefreshTokenAsync(CancellationToken cancellationToken = default);
+    #endregion
+}
