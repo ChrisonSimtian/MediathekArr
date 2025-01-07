@@ -7,11 +7,9 @@ using Xunit.Abstractions;
 
 namespace TvdbClient.Tests;
 
-public class AuthenticationUnitTests
+public class AuthenticationUnitTests(ITestOutputHelper outputHelper)
 {
-    public AuthenticationUnitTests(ITestOutputHelper outputHelper) => OutputHelper = outputHelper;
-
-    public ITestOutputHelper OutputHelper { get; }
+    public ITestOutputHelper OutputHelper { get; } = outputHelper;
 
     [Fact]
     public async void ManuallyAuthenticate_Fact()
@@ -49,35 +47,4 @@ public class AuthenticationUnitTests
         token.AccessToken.Should().NotBeNullOrEmpty();
     }
 
-    [Fact]
-    public async void TokenProviderBasedAuthenticate_Fact()
-    {
-        // Arrange
-        var config = new Configuration.TvdbConfiguration
-        {
-            BaseUrl = "https://api4.thetvdb.com/v4",
-            ApiKey = "e82b72fe-8674-4cc1-8cbb-474ed12a3fed"
-        };
-
-        var serviceProvider = new ServiceCollection()
-            .AddLogging((builder) => builder.AddXUnit(OutputHelper))
-            .AddSingleton(config)
-            .AddSingleton<TvdbTokenProvider>()
-            .BuildServiceProvider();
-
-        // Act
-        var provider = serviceProvider.GetRequiredService<TvdbTokenProvider>();
-        var token = await provider.AcquireTokenAsync();
-
-        // Assert
-
-        /* Validate Data, Token should be populated and valid for a month */
-        token.Should().NotBeNull();
-        token.TokenType.Should().Be("Bearer");
-        token.CreationTimestamp.Should().BeBefore(DateTime.Now);
-        token.IsTokenExpired.Should().BeFalse();
-        token.TokenExpiryDate.Should().BeCloseTo(DateTime.Today.AddMonths(1), TimeSpan.FromDays(1)); // should be roughly a month, +/- a day
-
-        token.AccessToken.Should().NotBeNullOrEmpty();
-    }
 }

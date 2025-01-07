@@ -5,16 +5,18 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using TvdbClient.Configuration;
 using TvdbClient.Handlers;
 using TvdbClient.Models;
 
 namespace TvdbClient.Provider;
 
-public class TvdbTokenProvider(TvdbConfiguration options, ILogger<TvdbTokenProvider> logger) : ITokenProvider
+public class TvdbTokenProvider(IOptions<TvdbConfiguration> options, ILogger<TvdbTokenProvider> logger) : ITokenProvider
 {
     #region Properties
-    public TvdbConfiguration Options { get; } = options;
+    public TvdbConfiguration Config => Options.Value;
+    public IOptions<TvdbConfiguration> Options { get; } = options;
     public ILogger<TvdbTokenProvider> Logger { get; } = logger;
     public Token Token { get; internal set; }
     #endregion
@@ -29,9 +31,9 @@ public class TvdbTokenProvider(TvdbConfiguration options, ILogger<TvdbTokenProvi
             try
             {
                 var httpClient = new HttpClient();
-                var requestBody = new StringContent(JsonSerializer.Serialize(new { apikey = Options.ApiKey }), Encoding.UTF8, System.Net.Mime.MediaTypeNames.Application.Json);
+                var requestBody = new StringContent(JsonSerializer.Serialize(new { apikey = Config.ApiKey }), Encoding.UTF8, System.Net.Mime.MediaTypeNames.Application.Json);
 
-                var response = await httpClient.PostAsync(Options.TokenUrl, requestBody, cancellationToken);
+                var response = await httpClient.PostAsync(Config.TokenUrl, requestBody, cancellationToken);
                 if (!response.IsSuccessStatusCode) Logger.LogError("Failed acquiring Token");
                 response.EnsureSuccessStatusCode();
 
