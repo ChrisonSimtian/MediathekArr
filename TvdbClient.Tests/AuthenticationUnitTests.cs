@@ -1,15 +1,30 @@
 ﻿using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using TvdbClient.Models;
-using TvdbClient.Provider;
+using Tvdb.Models;
 using Xunit.Abstractions;
 
-namespace TvdbClient.Tests;
+namespace Tvdb.Tests;
 
-public class AuthenticationUnitTests(ITestOutputHelper outputHelper)
+public class AuthenticationUnitTests
 {
-    public ITestOutputHelper OutputHelper { get; } = outputHelper;
+    public AuthenticationUnitTests(ITestOutputHelper outputHelper)
+    {
+        OutputHelper = outputHelper;
+
+        var builder = new HostApplicationBuilder();
+        var config = builder.Configuration
+            .AddTvdbClient()
+            .Build();
+        ServiceProvider = builder.Services
+            .AddLogging((builder) => builder.AddXUnit(OutputHelper))
+            .AddTvdbClient(config)
+            .BuildServiceProvider();
+    }
+
+    public ITestOutputHelper OutputHelper { get; }
+    public ServiceProvider ServiceProvider { get; internal set; }
 
     [Fact]
     public async void ManuallyAuthenticate_Fact()
@@ -47,4 +62,11 @@ public class AuthenticationUnitTests(ITestOutputHelper outputHelper)
         token.AccessToken.Should().NotBeNullOrEmpty();
     }
 
+    [Fact]
+    public async void TestRandomApi_Fact()
+    {
+        var client = ServiceProvider.GetRequiredService<ICountriesClient>();
+        var result = await client.CountriesAsync();
+        result.Status.Should().Be("success");
+    }
 }

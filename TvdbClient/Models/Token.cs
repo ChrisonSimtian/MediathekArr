@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TvdbClient.Extensions;
+using Tvdb.Extensions;
 
-namespace TvdbClient.Models;
+namespace Tvdb.Models;
 
 public class Token
 {

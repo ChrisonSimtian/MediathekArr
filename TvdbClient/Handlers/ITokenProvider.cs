@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
-using TvdbClient.Models;
+using Tvdb.Models;
 
-namespace TvdbClient.Handlers;
+namespace Tvdb.Handlers;
 
 /// <summary>
 /// Provider for Tokens

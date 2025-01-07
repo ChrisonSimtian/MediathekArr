@@ -6,11 +6,11 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using TvdbClient.Configuration;
-using TvdbClient.Handlers;
-using TvdbClient.Models;
+using Tvdb.Configuration;
+using Tvdb.Handlers;
+using Tvdb.Models;
 
-namespace TvdbClient.Provider;
+namespace Tvdb.Provider;
 
 public class TvdbTokenProvider(IOptions<TvdbConfiguration> options, ILogger<TvdbTokenProvider> logger) : ITokenProvider
 {

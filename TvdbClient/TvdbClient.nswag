@@ -16,7 +16,7 @@
       "suppressClientClassesOutput": false,
       "generateClientInterfaces": true,
       "suppressClientInterfacesOutput": false,
-      "clientBaseInterface": null,
+      "clientBaseInterface": "ITvdbClient",
       "injectHttpClient": true,
       "disposeHttpClient": true,
       "protectedMethods": [],
@@ -37,7 +37,7 @@
       "generateNativeRecords": false,
       "generateContractsOutput": true,
       "contractsNamespace": "Tvdb.Models",
-      "contractsOutputFilePath": "Contracts.cs",
+      "contractsOutputFilePath": "Models/TvdbModels.cs",
       "parameterDateTimeFormat": "s",
       "parameterDateFormat": "yyyy-MM-dd",
       "generateUpdateJsonSerializerSettingsMethod": true,
@@ -47,9 +47,13 @@
       "className": "{controller}Client",
       "operationGenerationMode": "MultipleClientsFromFirstTagAndPathSegments",
       "additionalNamespaceUsages": [
-        "Tvdb.Models"
+        "Tvdb.Models",
+        "System"
       ],
-      "additionalContractNamespaceUsages": [],
+      "additionalContractNamespaceUsages": [
+        "System",
+        "Tvdb.Clients"
+      ],
       "generateOptionalParameters": true,
       "generateJsonMethods": true,
       "enforceFlagEnums": false,
@@ -61,7 +65,7 @@
       "wrapResponseMethods": [],
       "generateResponseClasses": true,
       "responseClass": "SwaggerResponse",
-      "namespace": "Tvdb",
+      "namespace": "Tvdb.Clients",
       "requiredPropertiesMustBeDefined": true,
       "dateType": "System.DateTimeOffset",
       "jsonConverters": null,
@@ -95,7 +99,7 @@
       "templateDirectory": null,
       "serviceHost": null,
       "serviceSchemes": null,
-      "output": "Clients.cs",
+      "output": "Clients/TvdbClient.cs",
       "newLineBehavior": "Auto"
     }
   }

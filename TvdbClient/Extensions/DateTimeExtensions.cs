@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TvdbClient.Extensions;
+namespace Tvdb.Extensions;
 
 /// <summary>
 /// Extensions for <see cref="DateTime"/>

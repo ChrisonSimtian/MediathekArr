@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TvdbClient.Constants;
+namespace Tvdb.Constants;
 
 public static class TvdbConstants
 {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TvdbClient.Handlers;
+namespace Tvdb.Handlers;
 public class TokenAuthorizationHeaderHandler(ITokenProvider tokenProvider) : DelegatingHandler
 {
     #region Properties
