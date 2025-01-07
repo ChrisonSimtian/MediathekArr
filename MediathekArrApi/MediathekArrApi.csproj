@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MediathekArrLib\MediathekArrLib.csproj" />
+    <ProjectReference Include="..\TvdbClient\TvdbClient.csproj" />
   </ItemGroup>
 
 </Project>

@@ -17,6 +17,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<MediathekArrContext>(options => options.UseSqlite("Data Source=tvdb_cache.sqlite"));
 #endregion
 
+#region TVDB Client
+/* Spin up the TVDB Client */
+var config = builder.Configuration.AddTvdbClient().Build();
+builder.Services.AddTvdbClient(config);
+#endregion
+
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();

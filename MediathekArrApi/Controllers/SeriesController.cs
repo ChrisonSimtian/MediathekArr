@@ -2,6 +2,7 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Tvdb.Models;
 
 namespace MediathekArrApi.Controllers;
 
@@ -11,11 +12,13 @@ public class SeriesController : Controller
 {
     private readonly MediathekArrContext _context;
     private readonly HttpClient _httpClient;
+    private readonly ISeriesClient seriesClient;
 
-    public SeriesController(MediathekArrContext context, HttpClient httpClient)
+    public SeriesController(MediathekArrContext context, HttpClient httpClient, ISeriesClient seriesClient)
     {
         _context = context;
         _httpClient = httpClient;
+        this.seriesClient = seriesClient;
     }
 
     [HttpGet("{tvdbId}")]
@@ -60,11 +63,14 @@ public class SeriesController : Controller
 
     private async Task<object> FetchAndCacheSeriesData(int tvdbId, string apiKey, bool debug)
     {
+        var seriesData = await seriesClient.ExtendedAsync(tvdbId, Meta4.Episodes, true);
         var token = await GetToken(apiKey);
         if (token == null)
         {
             return null;
         }
+
+        
 
         var response = await _httpClient.GetAsync($"https://api4.thetvdb.com/v4/series/{tvdbId}/extended?meta=episodes&short=true");
         if (!response.IsSuccessStatusCode)
@@ -80,9 +86,9 @@ public class SeriesController : Controller
             return null;
         }
 
-        var series = data.Data;
-        var germanName = series.NameTranslations.ContainsKey("deu") ? series.NameTranslations["deu"] : series.Name;
-        var germanAliases = series.Aliases?.Where(a => a.Language == "deu").ToList() ?? new List<Alias>();
+        var series = seriesData.Data;
+        var germanName = series.NameTranslations.Any(t => t == "deu") ? series.NameTranslations.First(t => t == "deu") : series.Name;
+        var germanAliases = series.Aliases.ToList()?.Where(a => a.Language == "deu").ToList();
 
         var cacheExpiry = DateTime.UtcNow.AddDays(6);
         if (series.LastUpdated.AddDays(7) > DateTime.UtcNow ||
