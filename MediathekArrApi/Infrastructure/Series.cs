@@ -2,7 +2,7 @@
 
 namespace MediathekArrApi.Infrastructure;
 
-public class SeriesCache
+public class Series
 {
     [Key]
     public int SeriesId { get; set; }

@@ -15,5 +15,5 @@ public class Episode
     public int EpisodeNumber { get; set; }
 
     [ForeignKey("SeriesId")]
-    public SeriesCache SeriesCache { get; set; }
+    public Series SeriesCache { get; set; }
 }

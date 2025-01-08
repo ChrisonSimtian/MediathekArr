@@ -2,7 +2,12 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Tvdb.Clients;
+using Tvdb.Types;
 using Tvdb.Models;
+using MediathekArrApi.Models;
+using System.Net.Mime;
+using System.Net;
 
 namespace MediathekArrApi.Controllers;
 
@@ -24,68 +29,42 @@ public class SeriesController : Controller
     [HttpGet("{tvdbId}")]
     public async Task<IActionResult> GetSeriesData(int tvdbId, bool debug = false)
     {
-        var apiKey = await GetApiKey();
-        if (apiKey == null)
+        /* Return cached version of Series whenever possible */
+        if(await _context.Series.AnyAsync(s => s.SeriesId == tvdbId))
         {
-            return BadRequest("API key not found.");
+            var seriesData = await _context.Series
+                .Include(s => s.Episodes)
+                .FirstAsync(s => s.SeriesId == tvdbId);
+
+            if (!IsCacheExpired(seriesData)) return Ok(CreateResponse(seriesData));
         }
 
-        var seriesData = await _context.SeriesCaches
-            .Include(s => s.Episodes)
-            .FirstOrDefaultAsync(s => s.SeriesId == tvdbId);
-
-        if (seriesData != null && !IsCacheExpired(seriesData))
+        /* Fetch Series from TVDB API */
+        var newSeriesData = await FetchAndCacheSeriesData(tvdbId);
+        if (newSeriesData == null)
         {
-            return Ok(CreateResponse(seriesData, debug, true));
+            return Problem(statusCode: (int)HttpStatusCode.InternalServerError, title: "Failed to fetch data from TVDB.", detail: $"Tried fetching Series {tvdbId} from TVDB and failed.");
         }
-        else
-        {
-            var newSeriesData = await FetchAndCacheSeriesData(tvdbId, apiKey, debug);
-            if (newSeriesData == null)
-            {
-                return StatusCode(500, "Failed to fetch data from TVDB.");
-            }
 
-            return Ok(newSeriesData);
-        }
+        return Ok(CreateResponse(newSeriesData));
     }
 
-    private bool IsCacheExpired(SeriesCache seriesData)
+    private bool IsCacheExpired(Series seriesData)
     {
         return DateTime.UtcNow > seriesData.CacheExpiry;
     }
 
-    private async Task<string> GetApiKey()
+    private async Task<Series> FetchAndCacheSeriesData(int tvdbId)
     {
-        var apiKeyEntry = await _context.ApiKeys.FirstOrDefaultAsync(k => k.Id == 1);
-        return apiKeyEntry?.Key;
-    }
+        var seriesData = await seriesClient.ExtendedAsync(tvdbId, SeriesMeta.Episodes, true);
 
-    private async Task<object> FetchAndCacheSeriesData(int tvdbId, string apiKey, bool debug)
-    {
-        var seriesData = await seriesClient.ExtendedAsync(tvdbId, Meta4.Episodes, true);
-        var token = await GetToken(apiKey);
-        if (token == null)
-        {
-            return null;
-        }
+        if (!seriesData.IsSuccess) return null;
 
-        
-
-        var response = await _httpClient.GetAsync($"https://api4.thetvdb.com/v4/series/{tvdbId}/extended?meta=episodes&short=true");
-        if (!response.IsSuccessStatusCode)
-        {
-            return null;
-        }
-
-        var responseData = await response.Content.ReadAsStringAsync();
-        var data = JsonSerializer.Deserialize<SeriesApiResponse>(responseData);
-
-        if (data == null || data.Status != "success")
-        {
-            return null;
-        }
-
+        /* Caching:
+         * Place the record in our DB
+         * TODO: Place a copy in the actual cache as well. Since this runs in a docker container, storing this in memory might actually boost performance :-)
+         * TODO: Look into redis as cache instead of sqlite
+         */
         var series = seriesData.Data;
         var germanName = series.NameTranslations.Any(t => t == "deu") ? series.NameTranslations.First(t => t == "deu") : series.Name;
         var germanAliases = series.Aliases.ToList()?.Where(a => a.Language == "deu").ToList();
@@ -98,7 +77,7 @@ public class SeriesController : Controller
             cacheExpiry = DateTime.UtcNow.AddDays(2);
         }
 
-        var seriesCache = new SeriesCache
+        var record = new Series
         {
             SeriesId = tvdbId,
             Name = series.Name,
@@ -108,7 +87,7 @@ public class SeriesController : Controller
             NextAired = series.NextAired,
             LastAired = series.LastAired,
             CacheExpiry = cacheExpiry,
-            Episodes = series.Episodes.Select(e => new Episode
+            Episodes = [.. series.Episodes.Select(e => new Episode
             {
                 Id = e.Id,
                 SeriesId = tvdbId,
@@ -117,60 +96,26 @@ public class SeriesController : Controller
                 Runtime = e.Runtime,
                 SeasonNumber = e.SeasonNumber,
                 EpisodeNumber = e.Number
-            }).ToList()
+            })]
         };
 
-        _context.SeriesCaches.RemoveRange(_context.SeriesCaches.Where(s => s.SeriesId == tvdbId));
-        _context.SeriesCaches.Add(seriesCache);
+        _context.Series.RemoveRange(_context.Series.Where(s => s.SeriesId == tvdbId));
+        _context.Series.Add(record);
         await _context.SaveChangesAsync();
-
-        return CreateResponse(seriesCache, debug, false);
+        return record;
     }
 
-    private async Task<string> GetToken(string apiKey)
+    private static ApiResponseWrapper<object> CreateResponse(Series seriesData)
     {
-        var requestContent = new StringContent(JsonSerializer.Serialize(new { apikey = apiKey }), System.Text.Encoding.UTF8, "application/json");
-        var response = await _httpClient.PostAsync("https://api4.thetvdb.com/v4/login", requestContent);
-
-        if (!response.IsSuccessStatusCode)
+        var response = new ApiResponseWrapper<object>()
         {
-            return null;
-        }
-
-        var responseData = await response.Content.ReadAsStringAsync();
-        var data = JsonSerializer.Deserialize<SeriesApiResponse>(responseData);
-
-        if (data == null || data.Status != "success")
-        {
-            return null;
-        }
-
-        var token = data.Data.Token;
-        var expirationDate = DateTime.UtcNow.AddHours(24);
-
-        var tokenEntry = await _context.ApiTokens.FirstOrDefaultAsync(t => t.Id == 1);
-        if (tokenEntry != null)
-        {
-            _context.ApiTokens.Remove(tokenEntry);
-        }
-
-        _context.ApiTokens.Add(new ApiToken { Id = 1, Token = token, ExpirationDate = expirationDate });
-        await _context.SaveChangesAsync();
-
-        return token;
-    }
-
-    private object CreateResponse(SeriesCache seriesData, bool debug, bool cached)
-    {
-        var response = new
-        {
-            status = "success",
-            data = new
+            Status = "success",
+            Data = new
             {
                 id = seriesData.SeriesId,
                 name = seriesData.Name,
                 german_name = seriesData.GermanName,
-                aliases = JsonSerializer.Deserialize<List<Alias>>(seriesData.Aliases),
+                aliases = JsonSerializer.Deserialize<List<MediathekArr.Models.Tvdb.Alias>>(seriesData.Aliases),
                 episodes = seriesData.Episodes.Select(e => new
                 {
                     name = e.Name,
@@ -182,76 +127,9 @@ public class SeriesController : Controller
             }
         };
 
-        if (debug)
-        {
-            response = new
-            {
-                status = "success",
-                data = new
-                {
-                    id = seriesData.SeriesId,
-                    name = seriesData.Name,
-                    german_name = seriesData.GermanName,
-                    aliases = JsonSerializer.Deserialize<List<Alias>>(seriesData.Aliases),
-                    episodes = seriesData.Episodes.Select(e => new
-                    {
-                        name = e.Name,
-                        aired = e.Aired,
-                        runtime = e.Runtime,
-                        seasonNumber = e.SeasonNumber,
-                        episodeNumber = e.EpisodeNumber
-                    }).ToList()
-                },
-                debug = new
-                {
-                    cached,
-                    cache_expiry = seriesData.CacheExpiry
-                }
-            };
-        }
-
         return response;
     }
 }
 
 
 
-public class SeriesApiResponse
-{
-    public string Status { get; set; }
-    public SeriesApiData Data { get; set; }
-}
-
-public class SeriesApiData
-{
-    public string Token { get; set; }
-    public SeriesData Data { get; set; }
-}
-
-public class SeriesData
-{
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public Dictionary<string, string> NameTranslations { get; set; }
-    public List<Alias> Aliases { get; set; }
-    public DateTime LastUpdated { get; set; }
-    public DateTime? NextAired { get; set; }
-    public DateTime? LastAired { get; set; }
-    public List<EpisodeData> Episodes { get; set; }
-}
-
-public class Alias
-{
-    public string Name { get; set; }
-    public string Language { get; set; }
-}
-
-public class EpisodeData
-{
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public DateTime Aired { get; set; }
-    public int Runtime { get; set; }
-    public int SeasonNumber { get; set; }
-    public int Number { get; set; }
-}

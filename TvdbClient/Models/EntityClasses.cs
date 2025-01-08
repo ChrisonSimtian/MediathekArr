@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Tvdb.Models;
@@ -837,7 +838,7 @@ public partial class EpisodeBaseRecord
     public int? AbsoluteNumber { get; set; }
 
     [System.Text.Json.Serialization.JsonPropertyName("aired")]
-    public string Aired { get; set; }
+    public DateTime Aired { get; set; }
 
     [System.Text.Json.Serialization.JsonPropertyName("airsAfterSeason")]
     public int? AirsAfterSeason { get; set; }
@@ -856,7 +857,7 @@ public partial class EpisodeBaseRecord
     public string FinaleType { get; set; }
 
     [System.Text.Json.Serialization.JsonPropertyName("id")]
-    public long? Id { get; set; }
+    public int Id { get; set; }
 
     [System.Text.Json.Serialization.JsonPropertyName("image")]
     public string Image { get; set; }
@@ -865,10 +866,11 @@ public partial class EpisodeBaseRecord
     public int? ImageType { get; set; }
 
     [System.Text.Json.Serialization.JsonPropertyName("isMovie")]
-    public long? IsMovie { get; set; }
+    public bool? IsMovie { get; set; }
 
+    [JsonConverter(typeof(Converters.DateTimeConverter))]
     [System.Text.Json.Serialization.JsonPropertyName("lastUpdated")]
-    public string LastUpdated { get; set; }
+    public DateTime? LastUpdated { get; set; }
 
     [System.Text.Json.Serialization.JsonPropertyName("linkedMovie")]
     public int? LinkedMovie { get; set; }
@@ -880,7 +882,7 @@ public partial class EpisodeBaseRecord
     public System.Collections.Generic.ICollection<string> NameTranslations { get; set; }
 
     [System.Text.Json.Serialization.JsonPropertyName("number")]
-    public int? Number { get; set; }
+    public int Number { get; set; }
 
     [System.Text.Json.Serialization.JsonPropertyName("overview")]
     public string Overview { get; set; }
@@ -889,10 +891,10 @@ public partial class EpisodeBaseRecord
     public System.Collections.Generic.ICollection<string> OverviewTranslations { get; set; }
 
     [System.Text.Json.Serialization.JsonPropertyName("runtime")]
-    public int? Runtime { get; set; }
+    public int Runtime { get; set; }
 
     [System.Text.Json.Serialization.JsonPropertyName("seasonNumber")]
-    public int? SeasonNumber { get; set; }
+    public int SeasonNumber { get; set; }
 
     [System.Text.Json.Serialization.JsonPropertyName("seasons")]
     public System.Collections.Generic.ICollection<SeasonBaseRecord> Seasons { get; set; }
@@ -967,8 +969,10 @@ public partial class EpisodeExtendedRecord
     [System.Text.Json.Serialization.JsonPropertyName("isMovie")]
     public long? IsMovie { get; set; }
 
+    [JsonConverter(typeof(Converters.DateTimeConverter))]
+
     [System.Text.Json.Serialization.JsonPropertyName("lastUpdated")]
-    public string LastUpdated { get; set; }
+    public DateTime? LastUpdated { get; set; }
 
     [System.Text.Json.Serialization.JsonPropertyName("linkedMovie")]
     public int? LinkedMovie { get; set; }
@@ -1318,8 +1322,10 @@ public partial class MovieBaseRecord
     [System.Text.Json.Serialization.JsonPropertyName("image")]
     public string Image { get; set; }
 
+    [JsonConverter(typeof(Converters.DateTimeConverter))]
+
     [System.Text.Json.Serialization.JsonPropertyName("lastUpdated")]
-    public string LastUpdated { get; set; }
+    public DateTime? LastUpdated { get; set; }
 
     [System.Text.Json.Serialization.JsonPropertyName("name")]
     public string Name { get; set; }
@@ -1408,8 +1414,10 @@ public partial class MovieExtendedRecord
     [System.Text.Json.Serialization.JsonPropertyName("inspirations")]
     public System.Collections.Generic.ICollection<Inspiration> Inspirations { get; set; }
 
+    [JsonConverter(typeof(Converters.DateTimeConverter))]
+
     [System.Text.Json.Serialization.JsonPropertyName("lastUpdated")]
-    public string LastUpdated { get; set; }
+    public DateTime? LastUpdated { get; set; }
 
     [System.Text.Json.Serialization.JsonPropertyName("lists")]
     public System.Collections.Generic.ICollection<ListBaseRecord> Lists { get; set; }
@@ -1498,8 +1506,10 @@ public partial class PeopleBaseRecord
     [System.Text.Json.Serialization.JsonPropertyName("image")]
     public string Image { get; set; }
 
+    [JsonConverter(typeof(Converters.DateTimeConverter))]
+
     [System.Text.Json.Serialization.JsonPropertyName("lastUpdated")]
-    public string LastUpdated { get; set; }
+    public DateTime? LastUpdated { get; set; }
 
     [System.Text.Json.Serialization.JsonPropertyName("name")]
     public string Name { get; set; }
@@ -1561,8 +1571,10 @@ public partial class PeopleExtendedRecord
     [System.Text.Json.Serialization.JsonPropertyName("image")]
     public string Image { get; set; }
 
+    [JsonConverter(typeof(Converters.DateTimeConverter))]
+
     [System.Text.Json.Serialization.JsonPropertyName("lastUpdated")]
-    public string LastUpdated { get; set; }
+    public DateTime? LastUpdated { get; set; }
 
     [System.Text.Json.Serialization.JsonPropertyName("name")]
     public string Name { get; set; }
@@ -1888,8 +1900,10 @@ public partial class SeasonBaseRecord
     [System.Text.Json.Serialization.JsonPropertyName("imageType")]
     public int? ImageType { get; set; }
 
+    [JsonConverter(typeof(Converters.DateTimeConverter))]
+
     [System.Text.Json.Serialization.JsonPropertyName("lastUpdated")]
-    public string LastUpdated { get; set; }
+    public DateTime? LastUpdated { get; set; }
 
     [System.Text.Json.Serialization.JsonPropertyName("name")]
     public string Name { get; set; }
@@ -1951,8 +1965,10 @@ public partial class SeasonExtendedRecord
     [System.Text.Json.Serialization.JsonPropertyName("imageType")]
     public int? ImageType { get; set; }
 
+    [JsonConverter(typeof(Converters.DateTimeConverter))]
+
     [System.Text.Json.Serialization.JsonPropertyName("lastUpdated")]
-    public string LastUpdated { get; set; }
+    public DateTime? LastUpdated { get; set; }
 
     [System.Text.Json.Serialization.JsonPropertyName("name")]
     public string Name { get; set; }
@@ -2101,8 +2117,10 @@ public partial class SeriesBaseRecord
     [System.Text.Json.Serialization.JsonPropertyName("lastAired")]
     public string LastAired { get; set; }
 
+    [JsonConverter(typeof(Converters.DateTimeConverter))]
+
     [System.Text.Json.Serialization.JsonPropertyName("lastUpdated")]
-    public string LastUpdated { get; set; }
+    public DateTime? LastUpdated { get; set; }
 
     [System.Text.Json.Serialization.JsonPropertyName("name")]
     public string Name { get; set; }
@@ -2158,8 +2176,9 @@ public partial class SeriesExtendedRecord
     [System.Text.Json.Serialization.JsonPropertyName("airsDays")]
     public SeriesAirsDays AirsDays { get; set; }
 
+    [JsonConverter(typeof(Converters.TimeOnlyConverter))]
     [System.Text.Json.Serialization.JsonPropertyName("airsTime")]
-    public string AirsTime { get; set; }
+    public TimeOnly? AirsTime { get; set; }
 
     [System.Text.Json.Serialization.JsonPropertyName("aliases")]
     public System.Collections.Generic.ICollection<Alias> Aliases { get; set; }
@@ -2185,8 +2204,9 @@ public partial class SeriesExtendedRecord
     [System.Text.Json.Serialization.JsonPropertyName("episodes")]
     public System.Collections.Generic.ICollection<EpisodeBaseRecord> Episodes { get; set; }
 
+    [JsonConverter(typeof(Converters.DateOnlyConverter))]
     [System.Text.Json.Serialization.JsonPropertyName("firstAired")]
-    public string FirstAired { get; set; }
+    public DateOnly? FirstAired { get; set; }
 
     [System.Text.Json.Serialization.JsonPropertyName("lists")]
     public object Lists { get; set; }
@@ -2203,11 +2223,14 @@ public partial class SeriesExtendedRecord
     [System.Text.Json.Serialization.JsonPropertyName("isOrderRandomized")]
     public bool? IsOrderRandomized { get; set; }
 
+    [JsonConverter(typeof(Converters.DateOnlyConverter))]
     [System.Text.Json.Serialization.JsonPropertyName("lastAired")]
-    public string LastAired { get; set; }
+    public DateOnly? LastAired { get; set; }
+
+    [JsonConverter(typeof(Converters.DateTimeConverter))]
 
     [System.Text.Json.Serialization.JsonPropertyName("lastUpdated")]
-    public string LastUpdated { get; set; }
+    public DateTime? LastUpdated { get; set; }
 
     [System.Text.Json.Serialization.JsonPropertyName("name")]
     public string Name { get; set; }
@@ -2218,8 +2241,9 @@ public partial class SeriesExtendedRecord
     [System.Text.Json.Serialization.JsonPropertyName("companies")]
     public System.Collections.Generic.ICollection<Company> Companies { get; set; }
 
+    [JsonConverter(typeof(Converters.DateOnlyConverter))]
     [System.Text.Json.Serialization.JsonPropertyName("nextAired")]
-    public string NextAired { get; set; }
+    public DateOnly? NextAired { get; set; }
 
     [System.Text.Json.Serialization.JsonPropertyName("originalCountry")]
     public string OriginalCountry { get; set; }
