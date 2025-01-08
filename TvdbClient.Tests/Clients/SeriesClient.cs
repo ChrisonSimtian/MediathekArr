@@ -47,6 +47,22 @@ public class SeriesClient
         // Arrange
 
         // Act
+        var result = await Client.SeriesGetAsync(tvdbId);
+        var data = result.Data;
+        // Assert
+        result.Should().NotBeNull();
+        result.IsSuccess.Should().BeTrue();
+
+        data.Should().NotBeNull();
+    }
+
+    [Theory]
+    [InlineData(234791)] // Heute Show
+    public async Task GetSeriesExtendedById_Theory(int tvdbId)
+    {
+        // Arrange
+
+        // Act
         var result = await Client.ExtendedAsync(tvdbId);
         var data = result.Data;
         // Assert
