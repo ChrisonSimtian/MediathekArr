@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace MediathekArrApi.Infrastructure;
+namespace MediathekArr.Infrastructure;
 
 public class MediathekArrContext : DbContext
 {

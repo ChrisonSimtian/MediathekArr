@@ -1,48 +1,48 @@
-﻿using MediathekArrApi.Infrastructure;
+﻿using MediathekArr.Infrastructure;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Tvdb.Clients;
 using Tvdb.Types;
 using Tvdb.Models;
-using MediathekArrApi.Models;
-using System.Net.Mime;
+using MediathekArr.Extensions;
 using System.Net;
+using Tvdb.Extensions;
 
-namespace MediathekArrApi.Controllers;
+namespace MediathekArr.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class SeriesController : Controller
+public class SeriesController(MediathekArrContext context, ISeriesClient seriesClient, ILogger<SeriesController> logger) : Controller
 {
-    private readonly MediathekArrContext _context;
-    private readonly HttpClient _httpClient;
-    private readonly ISeriesClient seriesClient;
+    #region Properties
+    public MediathekArrContext Context { get; } = context;
+    public ISeriesClient SeriesClient { get; } = seriesClient;
 
-    public SeriesController(MediathekArrContext context, HttpClient httpClient, ISeriesClient seriesClient)
-    {
-        _context = context;
-        _httpClient = httpClient;
-        this.seriesClient = seriesClient;
-    }
+    public ILogger<SeriesController> Logger { get; } = logger;
+    #endregion
+
 
     [HttpGet("{tvdbId}")]
-    public async Task<IActionResult> GetSeriesData(int tvdbId, bool debug = false)
+    public async Task<IActionResult> GetSeriesData(int tvdbId)
     {
         /* Return cached version of Series whenever possible */
-        if(await _context.Series.AnyAsync(s => s.SeriesId == tvdbId))
+        if (await Context.Series.AnyAsync(s => s.SeriesId == tvdbId))
         {
-            var seriesData = await _context.Series
+            Logger.LogTrace("Found {tvdbId} in Cache", tvdbId);
+            var seriesData = await Context.Series
                 .Include(s => s.Episodes)
                 .FirstAsync(s => s.SeriesId == tvdbId);
 
-            if (!IsCacheExpired(seriesData)) return Ok(CreateResponse(seriesData));
+            if (!seriesData.CacheExpiry.IsInThePast()) return Ok(CreateResponse(seriesData));
+            Logger.LogWarning("Series {tvdbId} in Cache has expired on {expiryDate}", tvdbId, seriesData.CacheExpiry);
         }
 
         /* Fetch Series from TVDB API */
         var newSeriesData = await FetchAndCacheSeriesData(tvdbId);
         if (newSeriesData == null)
         {
+            Logger.LogError("Tried fetching Series {tvdbId} from TVDB and failed.", tvdbId);
             return Problem(statusCode: (int)HttpStatusCode.InternalServerError, title: "Failed to fetch data from TVDB.", detail: $"Tried fetching Series {tvdbId} from TVDB and failed.");
         }
 
@@ -56,8 +56,8 @@ public class SeriesController : Controller
 
     private async Task<Series> FetchAndCacheSeriesData(int tvdbId)
     {
-        var seriesData = await seriesClient.ExtendedAsync(tvdbId, SeriesMeta.Episodes, true);
-
+        /* Fetch from TVDB */
+        var seriesData = await SeriesClient.ExtendedAsync(tvdbId, SeriesMeta.Episodes, true);
         if (!seriesData.IsSuccess) return null;
 
         /* Caching:
@@ -69,10 +69,11 @@ public class SeriesController : Controller
         var germanName = series.NameTranslations.Any(t => t == "deu") ? series.NameTranslations.First(t => t == "deu") : series.Name;
         var germanAliases = series.Aliases.ToList()?.Where(a => a.Language == "deu").ToList();
 
+        /* Set Cache expiry */
         var cacheExpiry = DateTime.UtcNow.AddDays(6);
-        if (series.LastUpdated.AddDays(7) > DateTime.UtcNow ||
-            (series.NextAired.HasValue && series.NextAired.Value.AddDays(6) > DateTime.UtcNow) ||
-            (series.LastAired.HasValue && series.LastAired.Value.AddDays(3) > DateTime.UtcNow))
+        if ((series.LastUpdated.HasValue && series.LastUpdated.Value.AddDays(7) > DateTime.UtcNow) ||
+            (series.NextAired.HasValue && series.NextAired.Value.ToDateTime().AddDays(6) > DateTime.UtcNow) ||
+            (series.LastAired.HasValue && series.LastAired.Value.ToDateTime().AddDays(3) > DateTime.UtcNow))
         {
             cacheExpiry = DateTime.UtcNow.AddDays(2);
         }
@@ -83,9 +84,9 @@ public class SeriesController : Controller
             Name = series.Name,
             GermanName = germanName,
             Aliases = JsonSerializer.Serialize(germanAliases),
-            LastUpdated = series.LastUpdated,
-            NextAired = series.NextAired,
-            LastAired = series.LastAired,
+            LastUpdated = series.LastUpdated ?? DateTime.MinValue,
+            NextAired = series.NextAired.ToDateTime(),
+            LastAired = series.LastAired.ToDateTime(),
             CacheExpiry = cacheExpiry,
             Episodes = [.. series.Episodes.Select(e => new Episode
             {
@@ -99,9 +100,9 @@ public class SeriesController : Controller
             })]
         };
 
-        _context.Series.RemoveRange(_context.Series.Where(s => s.SeriesId == tvdbId));
-        _context.Series.Add(record);
-        await _context.SaveChangesAsync();
+        Context.Series.RemoveRange(Context.Series.Where(s => s.SeriesId == tvdbId));
+        await Context.Series.AddAsync(record);
+        await Context.SaveChangesAsync();
         return record;
     }
 
@@ -115,7 +116,7 @@ public class SeriesController : Controller
                 id = seriesData.SeriesId,
                 name = seriesData.Name,
                 german_name = seriesData.GermanName,
-                aliases = JsonSerializer.Deserialize<List<MediathekArr.Models.Tvdb.Alias>>(seriesData.Aliases),
+                aliases = JsonSerializer.Deserialize<List<Models.Tvdb.Alias>>(seriesData.Aliases),
                 episodes = seriesData.Episodes.Select(e => new
                 {
                     name = e.Name,

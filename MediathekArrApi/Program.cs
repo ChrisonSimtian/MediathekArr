@@ -1,4 +1,4 @@
-using MediathekArrApi.Infrastructure;
+using MediathekArr.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);

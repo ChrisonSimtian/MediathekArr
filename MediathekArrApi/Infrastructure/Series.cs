@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace MediathekArrApi.Infrastructure;
+namespace MediathekArr.Infrastructure;
 
 public class Series
 {

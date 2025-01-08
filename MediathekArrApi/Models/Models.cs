@@ -1,4 +1,4 @@
-﻿namespace MediathekArrApi.Models;
+﻿namespace MediathekArr.Models;
 
 public class SeriesApiResponse
 {

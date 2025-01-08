@@ -7,4 +7,8 @@
 		<RootNamespace>MediathekArr</RootNamespace>
 	</PropertyGroup>
 
+	<ItemGroup>
+	  <PackageReference Include="TinyHelpers" Version="3.2.10" />
+	</ItemGroup>
+
 </Project>
