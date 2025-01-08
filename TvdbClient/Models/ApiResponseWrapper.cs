@@ -34,4 +34,16 @@ public class ApiResponseWrapper<TDataType>
 
     [System.Text.Json.Serialization.JsonPropertyName("data")]
     public TDataType? Data { get; set; }
+
+    private System.Collections.Generic.IDictionary<string, object> _additionalProperties;
+
+    [System.Text.Json.Serialization.JsonExtensionData]
+    public System.Collections.Generic.IDictionary<string, object> AdditionalProperties
+    {
+        get { return _additionalProperties ?? (_additionalProperties = new System.Collections.Generic.Dictionary<string, object>()); }
+        set { _additionalProperties = value; }
+    }
+
+    [System.Text.Json.Serialization.JsonPropertyName("links")]
+    public Links Links { get; set; }
 }
