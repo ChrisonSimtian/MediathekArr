@@ -91,7 +91,7 @@ public partial class ArtworkBaseRecord
 /// extended artwork record
 /// </summary>
 [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
-public partial class ArtworkExtendedRecord
+public partial class ArtworkExtendedRecord : ArtworkBaseRecord
 {
 
     [System.Text.Json.Serialization.JsonPropertyName("episodeId")]
@@ -266,6 +266,36 @@ public partial class AwardBaseRecord
 }
 
 /// <summary>
+/// extended award record
+/// </summary>
+[System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
+public partial class AwardExtendedRecord : AwardBaseRecord
+{
+
+    [System.Text.Json.Serialization.JsonPropertyName("categories")]
+    public System.Collections.Generic.ICollection<AwardCategoryBaseRecord> Categories { get; set; }
+
+    [System.Text.Json.Serialization.JsonPropertyName("id")]
+    public int? Id { get; set; }
+
+    [System.Text.Json.Serialization.JsonPropertyName("name")]
+    public string Name { get; set; }
+
+    [System.Text.Json.Serialization.JsonPropertyName("score")]
+    public long? Score { get; set; }
+
+    private System.Collections.Generic.IDictionary<string, object> _additionalProperties;
+
+    [System.Text.Json.Serialization.JsonExtensionData]
+    public System.Collections.Generic.IDictionary<string, object> AdditionalProperties
+    {
+        get { return _additionalProperties ?? (_additionalProperties = new System.Collections.Generic.Dictionary<string, object>()); }
+        set { _additionalProperties = value; }
+    }
+
+}
+
+/// <summary>
 /// base award category record
 /// </summary>
 [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -305,7 +335,7 @@ public partial class AwardCategoryBaseRecord
 /// extended award category record
 /// </summary>
 [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
-public partial class AwardCategoryExtendedRecord
+public partial class AwardCategoryExtendedRecord : AwardCategoryBaseRecord
 {
 
     [System.Text.Json.Serialization.JsonPropertyName("allowCoNominees")]
@@ -328,36 +358,6 @@ public partial class AwardCategoryExtendedRecord
 
     [System.Text.Json.Serialization.JsonPropertyName("nominees")]
     public System.Collections.Generic.ICollection<AwardNomineeBaseRecord> Nominees { get; set; }
-
-    private System.Collections.Generic.IDictionary<string, object> _additionalProperties;
-
-    [System.Text.Json.Serialization.JsonExtensionData]
-    public System.Collections.Generic.IDictionary<string, object> AdditionalProperties
-    {
-        get { return _additionalProperties ?? (_additionalProperties = new System.Collections.Generic.Dictionary<string, object>()); }
-        set { _additionalProperties = value; }
-    }
-
-}
-
-/// <summary>
-/// extended award record
-/// </summary>
-[System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
-public partial class AwardExtendedRecord
-{
-
-    [System.Text.Json.Serialization.JsonPropertyName("categories")]
-    public System.Collections.Generic.ICollection<AwardCategoryBaseRecord> Categories { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("id")]
-    public int? Id { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("name")]
-    public string Name { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("score")]
-    public long? Score { get; set; }
 
     private System.Collections.Generic.IDictionary<string, object> _additionalProperties;
 
@@ -828,221 +828,6 @@ public partial class EntityUpdate
 }
 
 /// <summary>
-/// base episode record
-/// </summary>
-[System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
-public partial class EpisodeBaseRecord
-{
-
-    [System.Text.Json.Serialization.JsonPropertyName("absoluteNumber")]
-    public int? AbsoluteNumber { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("aired")]
-    public DateTime Aired { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("airsAfterSeason")]
-    public int? AirsAfterSeason { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("airsBeforeEpisode")]
-    public int? AirsBeforeEpisode { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("airsBeforeSeason")]
-    public int? AirsBeforeSeason { get; set; }
-
-    /// <summary>
-    /// season, midseason, or series
-    /// </summary>
-
-    [System.Text.Json.Serialization.JsonPropertyName("finaleType")]
-    public string FinaleType { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("id")]
-    public int Id { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("image")]
-    public string Image { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("imageType")]
-    public int? ImageType { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("isMovie")]
-    public bool? IsMovie { get; set; }
-
-    [JsonConverter(typeof(Converters.DateTimeConverter))]
-    [System.Text.Json.Serialization.JsonPropertyName("lastUpdated")]
-    public DateTime? LastUpdated { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("linkedMovie")]
-    public int? LinkedMovie { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("name")]
-    public string Name { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("nameTranslations")]
-    public System.Collections.Generic.ICollection<string> NameTranslations { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("number")]
-    public int Number { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("overview")]
-    public string Overview { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("overviewTranslations")]
-    public System.Collections.Generic.ICollection<string> OverviewTranslations { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("runtime")]
-    public int Runtime { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("seasonNumber")]
-    public int SeasonNumber { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("seasons")]
-    public System.Collections.Generic.ICollection<SeasonBaseRecord> Seasons { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("seriesId")]
-    public long? SeriesId { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("seasonName")]
-    public string SeasonName { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("year")]
-    public string Year { get; set; }
-
-    private System.Collections.Generic.IDictionary<string, object> _additionalProperties;
-
-    [System.Text.Json.Serialization.JsonExtensionData]
-    public System.Collections.Generic.IDictionary<string, object> AdditionalProperties
-    {
-        get { return _additionalProperties ?? (_additionalProperties = new System.Collections.Generic.Dictionary<string, object>()); }
-        set { _additionalProperties = value; }
-    }
-
-}
-
-/// <summary>
-/// extended episode record
-/// </summary>
-[System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
-public partial class EpisodeExtendedRecord
-{
-
-    [System.Text.Json.Serialization.JsonPropertyName("aired")]
-    public string Aired { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("airsAfterSeason")]
-    public int? AirsAfterSeason { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("airsBeforeEpisode")]
-    public int? AirsBeforeEpisode { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("airsBeforeSeason")]
-    public int? AirsBeforeSeason { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("awards")]
-    public System.Collections.Generic.ICollection<AwardBaseRecord> Awards { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("characters")]
-    public System.Collections.Generic.ICollection<Character> Characters { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("companies")]
-    public System.Collections.Generic.ICollection<Company> Companies { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("contentRatings")]
-    public System.Collections.Generic.ICollection<ContentRating> ContentRatings { get; set; }
-
-    /// <summary>
-    /// season, midseason, or series
-    /// </summary>
-
-    [System.Text.Json.Serialization.JsonPropertyName("finaleType")]
-    public string FinaleType { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("id")]
-    public long? Id { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("image")]
-    public string Image { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("imageType")]
-    public int? ImageType { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("isMovie")]
-    public long? IsMovie { get; set; }
-
-    [JsonConverter(typeof(Converters.DateTimeConverter))]
-
-    [System.Text.Json.Serialization.JsonPropertyName("lastUpdated")]
-    public DateTime? LastUpdated { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("linkedMovie")]
-    public int? LinkedMovie { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("name")]
-    public string Name { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("nameTranslations")]
-    public System.Collections.Generic.ICollection<string> NameTranslations { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("networks")]
-    public System.Collections.Generic.ICollection<Company> Networks { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("nominations")]
-    public System.Collections.Generic.ICollection<AwardNomineeBaseRecord> Nominations { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("number")]
-    public int? Number { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("overview")]
-    public string Overview { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("overviewTranslations")]
-    public System.Collections.Generic.ICollection<string> OverviewTranslations { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("productionCode")]
-    public string ProductionCode { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("remoteIds")]
-    public System.Collections.Generic.ICollection<RemoteID> RemoteIds { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("runtime")]
-    public int? Runtime { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("seasonNumber")]
-    public int? SeasonNumber { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("seasons")]
-    public System.Collections.Generic.ICollection<SeasonBaseRecord> Seasons { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("seriesId")]
-    public long? SeriesId { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("studios")]
-    public System.Collections.Generic.ICollection<Company> Studios { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("tagOptions")]
-    public System.Collections.Generic.ICollection<TagOption> TagOptions { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("trailers")]
-    public System.Collections.Generic.ICollection<Trailer> Trailers { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("translations")]
-    public TranslationExtended Translations { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("year")]
-    public string Year { get; set; }
-
-    private System.Collections.Generic.IDictionary<string, object> _additionalProperties;
-
-    [System.Text.Json.Serialization.JsonExtensionData]
-    public System.Collections.Generic.IDictionary<string, object> AdditionalProperties
-    {
-        get { return _additionalProperties ?? (_additionalProperties = new System.Collections.Generic.Dictionary<string, object>()); }
-        set { _additionalProperties = value; }
-    }
-
-}
-
-/// <summary>
 /// User favorites record
 /// </summary>
 [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -1256,7 +1041,7 @@ public partial class ListBaseRecord
 /// extended list record
 /// </summary>
 [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
-public partial class ListExtendedRecord
+public partial class ListExtendedRecord : ListBaseRecord
 {
 
     [System.Text.Json.Serialization.JsonPropertyName("aliases")]
@@ -1294,190 +1079,6 @@ public partial class ListExtendedRecord
 
     [System.Text.Json.Serialization.JsonPropertyName("url")]
     public string Url { get; set; }
-
-    private System.Collections.Generic.IDictionary<string, object> _additionalProperties;
-
-    [System.Text.Json.Serialization.JsonExtensionData]
-    public System.Collections.Generic.IDictionary<string, object> AdditionalProperties
-    {
-        get { return _additionalProperties ?? (_additionalProperties = new System.Collections.Generic.Dictionary<string, object>()); }
-        set { _additionalProperties = value; }
-    }
-
-}
-
-/// <summary>
-/// base movie record
-/// </summary>
-[System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
-public partial class MovieBaseRecord
-{
-
-    [System.Text.Json.Serialization.JsonPropertyName("aliases")]
-    public System.Collections.Generic.ICollection<Alias> Aliases { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("id")]
-    public long? Id { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("image")]
-    public string Image { get; set; }
-
-    [JsonConverter(typeof(Converters.DateTimeConverter))]
-
-    [System.Text.Json.Serialization.JsonPropertyName("lastUpdated")]
-    public DateTime? LastUpdated { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("name")]
-    public string Name { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("nameTranslations")]
-    public System.Collections.Generic.ICollection<string> NameTranslations { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("overviewTranslations")]
-    public System.Collections.Generic.ICollection<string> OverviewTranslations { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("score")]
-    public double? Score { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("slug")]
-    public string Slug { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("status")]
-    public Status Status { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("runtime")]
-    public int? Runtime { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("year")]
-    public string Year { get; set; }
-
-    private System.Collections.Generic.IDictionary<string, object> _additionalProperties;
-
-    [System.Text.Json.Serialization.JsonExtensionData]
-    public System.Collections.Generic.IDictionary<string, object> AdditionalProperties
-    {
-        get { return _additionalProperties ?? (_additionalProperties = new System.Collections.Generic.Dictionary<string, object>()); }
-        set { _additionalProperties = value; }
-    }
-
-}
-
-/// <summary>
-/// extended movie record
-/// </summary>
-[System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
-public partial class MovieExtendedRecord
-{
-
-    [System.Text.Json.Serialization.JsonPropertyName("aliases")]
-    public System.Collections.Generic.ICollection<Alias> Aliases { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("artworks")]
-    public System.Collections.Generic.ICollection<ArtworkBaseRecord> Artworks { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("audioLanguages")]
-    public System.Collections.Generic.ICollection<string> AudioLanguages { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("awards")]
-    public System.Collections.Generic.ICollection<AwardBaseRecord> Awards { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("boxOffice")]
-    public string BoxOffice { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("boxOfficeUS")]
-    public string BoxOfficeUS { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("budget")]
-    public string Budget { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("characters")]
-    public System.Collections.Generic.ICollection<Character> Characters { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("companies")]
-    public Companies Companies { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("contentRatings")]
-    public System.Collections.Generic.ICollection<ContentRating> ContentRatings { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("first_release")]
-    public Release First_release { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("genres")]
-    public System.Collections.Generic.ICollection<GenreBaseRecord> Genres { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("id")]
-    public long? Id { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("image")]
-    public string Image { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("inspirations")]
-    public System.Collections.Generic.ICollection<Inspiration> Inspirations { get; set; }
-
-    [JsonConverter(typeof(Converters.DateTimeConverter))]
-
-    [System.Text.Json.Serialization.JsonPropertyName("lastUpdated")]
-    public DateTime? LastUpdated { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("lists")]
-    public System.Collections.Generic.ICollection<ListBaseRecord> Lists { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("name")]
-    public string Name { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("nameTranslations")]
-    public System.Collections.Generic.ICollection<string> NameTranslations { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("originalCountry")]
-    public string OriginalCountry { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("originalLanguage")]
-    public string OriginalLanguage { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("overviewTranslations")]
-    public System.Collections.Generic.ICollection<string> OverviewTranslations { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("production_countries")]
-    public System.Collections.Generic.ICollection<ProductionCountry> Production_countries { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("releases")]
-    public System.Collections.Generic.ICollection<Release> Releases { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("remoteIds")]
-    public System.Collections.Generic.ICollection<RemoteID> RemoteIds { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("runtime")]
-    public int? Runtime { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("score")]
-    public double? Score { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("slug")]
-    public string Slug { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("spoken_languages")]
-    public System.Collections.Generic.ICollection<string> Spoken_languages { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("status")]
-    public Status Status { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("studios")]
-    public System.Collections.Generic.ICollection<StudioBaseRecord> Studios { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("subtitleLanguages")]
-    public System.Collections.Generic.ICollection<string> SubtitleLanguages { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("tagOptions")]
-    public System.Collections.Generic.ICollection<TagOption> TagOptions { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("trailers")]
-    public System.Collections.Generic.ICollection<Trailer> Trailers { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("translations")]
-    public TranslationExtended Translations { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("year")]
-    public string Year { get; set; }
 
     private System.Collections.Generic.IDictionary<string, object> _additionalProperties;
 
@@ -1538,7 +1139,7 @@ public partial class PeopleBaseRecord
 /// extended people record
 /// </summary>
 [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
-public partial class PeopleExtendedRecord
+public partial class PeopleExtendedRecord : PeopleBaseRecord
 {
 
     [System.Text.Json.Serialization.JsonPropertyName("aliases")]
@@ -1872,133 +1473,6 @@ public partial class SearchByRemoteIdResult
 
     [System.Text.Json.Serialization.JsonPropertyName("company")]
     public Company Company { get; set; }
-
-    private System.Collections.Generic.IDictionary<string, object> _additionalProperties;
-
-    [System.Text.Json.Serialization.JsonExtensionData]
-    public System.Collections.Generic.IDictionary<string, object> AdditionalProperties
-    {
-        get { return _additionalProperties ?? (_additionalProperties = new System.Collections.Generic.Dictionary<string, object>()); }
-        set { _additionalProperties = value; }
-    }
-
-}
-
-/// <summary>
-/// season genre record
-/// </summary>
-[System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
-public partial class SeasonBaseRecord
-{
-
-    [System.Text.Json.Serialization.JsonPropertyName("id")]
-    public int? Id { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("image")]
-    public string Image { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("imageType")]
-    public int? ImageType { get; set; }
-
-    [JsonConverter(typeof(Converters.DateTimeConverter))]
-
-    [System.Text.Json.Serialization.JsonPropertyName("lastUpdated")]
-    public DateTime? LastUpdated { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("name")]
-    public string Name { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("nameTranslations")]
-    public System.Collections.Generic.ICollection<string> NameTranslations { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("number")]
-    public long? Number { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("overviewTranslations")]
-    public System.Collections.Generic.ICollection<string> OverviewTranslations { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("companies")]
-    public Companies Companies { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("seriesId")]
-    public long? SeriesId { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("type")]
-    public SeasonType Type { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("year")]
-    public string Year { get; set; }
-
-    private System.Collections.Generic.IDictionary<string, object> _additionalProperties;
-
-    [System.Text.Json.Serialization.JsonExtensionData]
-    public System.Collections.Generic.IDictionary<string, object> AdditionalProperties
-    {
-        get { return _additionalProperties ?? (_additionalProperties = new System.Collections.Generic.Dictionary<string, object>()); }
-        set { _additionalProperties = value; }
-    }
-
-}
-
-/// <summary>
-/// extended season record
-/// </summary>
-[System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))")]
-public partial class SeasonExtendedRecord
-{
-
-    [System.Text.Json.Serialization.JsonPropertyName("artwork")]
-    public System.Collections.Generic.ICollection<ArtworkBaseRecord> Artwork { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("companies")]
-    public Companies Companies { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("episodes")]
-    public System.Collections.Generic.ICollection<EpisodeBaseRecord> Episodes { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("id")]
-    public int? Id { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("image")]
-    public string Image { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("imageType")]
-    public int? ImageType { get; set; }
-
-    [JsonConverter(typeof(Converters.DateTimeConverter))]
-
-    [System.Text.Json.Serialization.JsonPropertyName("lastUpdated")]
-    public DateTime? LastUpdated { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("name")]
-    public string Name { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("nameTranslations")]
-    public System.Collections.Generic.ICollection<string> NameTranslations { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("number")]
-    public long? Number { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("overviewTranslations")]
-    public System.Collections.Generic.ICollection<string> OverviewTranslations { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("seriesId")]
-    public long? SeriesId { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("trailers")]
-    public System.Collections.Generic.ICollection<Trailer> Trailers { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("type")]
-    public SeasonType Type { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("tagOptions")]
-    public System.Collections.Generic.ICollection<TagOption> TagOptions { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("translations")]
-    public System.Collections.Generic.ICollection<Translation> Translations { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("year")]
-    public string Year { get; set; }
 
     private System.Collections.Generic.IDictionary<string, object> _additionalProperties;
 
