@@ -8,10 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Tvdb.Configuration;
-using Tvdb.Provider;
 using Xunit.Abstractions;
 
-namespace Tvdb.Tests.Provider;
+namespace Tvdb.Provider;
 
 public class TvdbTokenProviderUnitTests
 {

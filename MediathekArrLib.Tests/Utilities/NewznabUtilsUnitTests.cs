@@ -4,9 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MediathekArr.Models.Newznab;
-using MediathekArr.Utilities;
 
-namespace MediathekArr.Tests.Utilities;
+namespace MediathekArr.Utilities;
 
 public class NewznabUtilsUnitTests
 {

@@ -22,9 +22,8 @@ public class SeriesController(MediathekArrContext context, ISeriesClient seriesC
     public ILogger<SeriesController> Logger { get; } = logger;
     #endregion
 
-
-    [HttpGet("{tvdbId}")]
-    public async Task<IActionResult> GetSeriesData(int tvdbId)
+    [HttpGet]
+    public async Task<IActionResult> GetSeriesData([FromQuery] int tvdbId)
     {
         /* Return cached version of Series whenever possible */
         if (await Context.Series.AnyAsync(s => s.SeriesId == tvdbId))
@@ -34,7 +33,7 @@ public class SeriesController(MediathekArrContext context, ISeriesClient seriesC
                 .Include(s => s.Episodes)
                 .FirstAsync(s => s.SeriesId == tvdbId);
 
-            if (!seriesData.CacheExpiry.IsInThePast()) return Ok(CreateResponse(seriesData));
+            if (!seriesData.CacheExpiry.IsInThePast()) return Ok(seriesData);
             Logger.LogWarning("Series {tvdbId} in Cache has expired on {expiryDate}", tvdbId, seriesData.CacheExpiry);
         }
 
@@ -46,12 +45,7 @@ public class SeriesController(MediathekArrContext context, ISeriesClient seriesC
             return Problem(statusCode: (int)HttpStatusCode.InternalServerError, title: "Failed to fetch data from TVDB.", detail: $"Tried fetching Series {tvdbId} from TVDB and failed.");
         }
 
-        return Ok(CreateResponse(newSeriesData));
-    }
-
-    private bool IsCacheExpired(Series seriesData)
-    {
-        return DateTime.UtcNow > seriesData.CacheExpiry;
+        return Ok(newSeriesData);
     }
 
     private async Task<Series> FetchAndCacheSeriesData(int tvdbId)
@@ -69,25 +63,16 @@ public class SeriesController(MediathekArrContext context, ISeriesClient seriesC
         var germanName = series.NameTranslations.Any(t => t == "deu") ? series.NameTranslations.First(t => t == "deu") : series.Name;
         var germanAliases = series.Aliases.ToList()?.Where(a => a.Language == "deu").ToList();
 
-        /* Set Cache expiry */
-        var cacheExpiry = DateTime.UtcNow.AddDays(6);
-        if ((series.LastUpdated.HasValue && series.LastUpdated.Value.AddDays(7) > DateTime.UtcNow) ||
-            (series.NextAired.HasValue && series.NextAired.Value.ToDateTime().AddDays(6) > DateTime.UtcNow) ||
-            (series.LastAired.HasValue && series.LastAired.Value.ToDateTime().AddDays(3) > DateTime.UtcNow))
-        {
-            cacheExpiry = DateTime.UtcNow.AddDays(2);
-        }
-
         var record = new Series
         {
             SeriesId = tvdbId,
             Name = series.Name,
             GermanName = germanName,
             Aliases = JsonSerializer.Serialize(germanAliases),
-            LastUpdated = series.LastUpdated ?? DateTime.MinValue,
+            LastUpdated = series.LastUpdated ?? DateTime.Today, // Dont really care about this but lets set it to today as a secondary marker of when we've cached this
             NextAired = series.NextAired.ToDateTime(),
             LastAired = series.LastAired.ToDateTime(),
-            CacheExpiry = cacheExpiry,
+            CacheExpiry = DateTime.Today.AddDays(1), // add one day caching (TODO: configurable)
             Episodes = [.. series.Episodes.Select(e => new Episode
             {
                 Id = e.Id,
@@ -100,9 +85,11 @@ public class SeriesController(MediathekArrContext context, ISeriesClient seriesC
             })]
         };
 
+        /* Clear existing cache in DB and then recreate one cached item */
         Context.Series.RemoveRange(Context.Series.Where(s => s.SeriesId == tvdbId));
         await Context.Series.AddAsync(record);
         await Context.SaveChangesAsync();
+        Logger.LogInformation("Added Series {tvdbId} from TVDB into the Cache.", tvdbId);
         return record;
     }
 

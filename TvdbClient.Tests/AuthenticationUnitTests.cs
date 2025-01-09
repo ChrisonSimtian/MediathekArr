@@ -6,7 +6,7 @@ using Tvdb.Clients;
 using Tvdb.Models;
 using Xunit.Abstractions;
 
-namespace Tvdb.Tests;
+namespace Tvdb;
 
 public class AuthenticationUnitTests
 {

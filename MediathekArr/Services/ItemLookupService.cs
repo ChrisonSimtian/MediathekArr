@@ -29,7 +29,7 @@ public class ItemLookupService(IHttpClientFactory httpClientFactory, IConfigurat
             }
         }
 
-        var requestUrl = $"{_apiBaseUrl}/get_show.php?tvdbid={tvdbid}";
+        var requestUrl = $"{_apiBaseUrl}/get_show.php?tvdbid={tvdbid}"; // TODO: Replace with C# API Calls
 
         var response = await _httpClient.GetAsync(requestUrl);
 
