@@ -64,6 +64,7 @@ public class SeriesController(ILogger<SeriesController> logger, MediathekArrCont
         return Ok(newSeriesData);
     }
 
+    [NonAction]
     public async Task<Series> FetchAndCacheSeriesData(int tvdbId)
     {
         /* Fetch from TVDB */
