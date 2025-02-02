@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -31,6 +32,7 @@ public class Ruleset
     [JsonPropertyName("filters")]
     public string FiltersJson { get; set; } = string.Empty;
 
+    [NotMapped]
     [JsonIgnore]
     public virtual List<Filter> Filters
     {
@@ -43,6 +45,7 @@ public class Ruleset
     [JsonPropertyName("titleRegexRules")]
     public string TitleRegexRulesJson { get; set; } = string.Empty;
 
+    [NotMapped]
     [JsonIgnore]
     public virtual List<TitleRegexRule> TitleRegexRules
     {

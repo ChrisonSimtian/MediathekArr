@@ -17,5 +17,7 @@ public class MediathekArrContext : DbContext
     {
         modelBuilder.Entity<Series>().ToTable("series_cache");
         modelBuilder.Entity<Episode>().ToTable("episodes");
+        modelBuilder.Entity<Models.Rulesets.Ruleset>().ToTable("rulesets");
+        modelBuilder.Entity<Models.Rulesets.Media>().ToTable("media");
     }
 }
