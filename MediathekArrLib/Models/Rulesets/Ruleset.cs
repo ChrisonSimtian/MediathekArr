@@ -5,6 +5,7 @@ namespace MediathekArr.Models.Rulesets;
 
 public class Ruleset
 {
+    [Key]
     [JsonPropertyName("id")]
     public int Id { get; set; }
 
@@ -15,7 +16,7 @@ public class Ruleset
     public string Topic { get; set; } = string.Empty; // Raw topic string from API
 
     [JsonIgnore]
-    public List<string> Topics
+    public virtual List<string> Topics
     {
         get
         {
@@ -30,7 +31,7 @@ public class Ruleset
     public string FiltersJson { get; set; } = string.Empty;
 
     [JsonIgnore]
-    public List<Filter> Filters
+    public virtual List<Filter> Filters
     {
         get
         {
@@ -42,7 +43,7 @@ public class Ruleset
     public string TitleRegexRulesJson { get; set; } = string.Empty;
 
     [JsonIgnore]
-    public List<TitleRegexRule> TitleRegexRules
+    public virtual List<TitleRegexRule> TitleRegexRules
     {
         get
         {
@@ -63,8 +64,8 @@ public class Ruleset
 
     [JsonPropertyName("matchingStrategy")]
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public MatchingStrategy MatchingStrategy { get; set; }
+    public virtual MatchingStrategy MatchingStrategy { get; set; }
 
     [JsonPropertyName("media")]
-    public Media Media { get; set; } = new Media();
+    public virtual Media Media { get; set; } = new Media();
 }

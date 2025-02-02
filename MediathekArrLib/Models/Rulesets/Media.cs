@@ -1,9 +1,11 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace MediathekArr.Models.Rulesets;
 
 public class Media
 {
+    [Key]
     [JsonPropertyName("media_id")]
     public int Id { get; set; }
 
