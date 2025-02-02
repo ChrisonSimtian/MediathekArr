@@ -65,7 +65,7 @@ public class Ruleset
 
     [JsonPropertyName("matchingStrategy")]
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public virtual MatchingStrategy MatchingStrategy { get; set; }
+    public MatchingStrategy MatchingStrategy { get; set; }
 
     [JsonPropertyName("media")]
     public virtual Media Media { get; set; } = new Media();
