@@ -1,5 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 using MediathekArr.Infrastructure;
+using Microsoft.AspNetCore.OData;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
@@ -58,11 +59,16 @@ public static class Bootstrapper
         builder.Services.AddTvdbClient(config);
         #endregion
 
+        /* Set up Controllers */
+        builder.Services.AddControllers()
         /* Prevent circular endless loops */
-        builder.Services.AddControllers().AddJsonOptions(options =>
+        .AddJsonOptions(options =>
         {
             options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
-        }); ;
+        })
+        /* Add OData Support */
+        .AddOData(opt => opt.Select().Filter().OrderBy().Count().Expand())
+        ;
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
 
@@ -71,10 +77,24 @@ public static class Bootstrapper
 
     public static IApplicationBuilder AddMediathekArrApi(this WebApplication app)
     {
-        /* Spin up Database if first start */
+        /* Run migrations for existing Databases */
         using var scope = app.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<MediathekArrContext>();
-        dbContext.Database.EnsureCreated();
+        var context = scope.ServiceProvider.GetRequiredService<MediathekArrContext>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        int migrationCount = context.Database.GetPendingMigrations().Count();
+        if (migrationCount > 0)
+        {
+            logger.LogInformation("Found {count} Migrations. Running Migrations now.", migrationCount);
+            try
+            {
+                context.Database.Migrate();
+                logger.LogInformation("Migrations completed.");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to run Migrations.");
+            }
+        }
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
