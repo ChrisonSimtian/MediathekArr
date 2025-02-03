@@ -16,14 +16,14 @@ namespace MediathekArr.Services;
 
 public partial class MediathekSearchService(IHttpClientFactory httpClientFactory, IMemoryCache cache, ItemLookupService itemLookupService)
 {
-    private readonly IMemoryCache _cache = cache;
-    private readonly ItemLookupService _itemLookupService = itemLookupService;
-    private readonly HttpClient _httpClient = httpClientFactory.CreateClient(Constants.MediathekArrConstants.Mediathek_HttpClient);
-    private readonly TimeSpan _cacheTimeSpan = TimeSpan.FromMinutes(55);
-    private static readonly string[] _skipTitleKeywords = ["Audiodeskription", "Hörfassung", "(klare Sprache)", "Gebärdensprache", "Trailer", "Outtakes:"];
-    private static readonly string[] _skipUrlKeywords = ["YXVkaW9kZXNrcmlwdGlvbg"]; // base64 for ARD, YXVkaW9kZXNrcmlwdGlvbg = audiodeskription
-    private static readonly string[] _queryFields = ["topic", "title"];
-    private readonly ConcurrentDictionary<string, List<Ruleset>> _rulesetsByTopic = new();
+	private readonly IMemoryCache _cache = cache;
+	private readonly ItemLookupService _itemLookupService = itemLookupService;
+	private readonly HttpClient _httpClient = httpClientFactory.CreateClient(Constants.MediathekArrConstants.Mediathek_HttpClient);
+	private readonly TimeSpan _cacheTimeSpan = TimeSpan.FromMinutes(55);
+	private static readonly string[] _skipTitleKeywords = ["Audiodeskription", "Hörfassung", "(klare Sprache)", "Gebärdensprache", "Trailer", "Outtakes:"];
+	private static readonly string[] _skipUrlKeywords = ["YXVkaW9kZXNrcmlwdGlvbg"]; // base64 for ARD, YXVkaW9kZXNrcmlwdGlvbg = audiodeskription
+	private static readonly string[] _queryFields = ["topic", "title"];
+	private readonly ConcurrentDictionary<string, List<Ruleset>> _rulesetsByTopic = new();
 
 	public async Task UpdateRulesetsAsync()
 	{
@@ -101,38 +101,37 @@ public partial class MediathekSearchService(IHttpClientFactory httpClientFactory
 		return string.Empty;
 	}
 
-    public async Task<string> FetchSearchResultsFromApiById(Series tvdbData, string? season, string? episodeNumber, int limit, int offset)
-    {
-        var cacheKey = $"tvdb_{tvdbData.SeriesId}_{season ?? "null"}_{episodeNumber ?? "null"}_{limit}_{offset}";
+	public async Task<string> FetchSearchResultsFromApiById(Series tvdbData, string? season, string? episodeNumber, int limit, int offset)
+	{
+		var cacheKey = $"tvdb_{tvdbData.SeriesId}_{season ?? "null"}_{episodeNumber ?? "null"}_{limit}_{offset}";
 
 		if (_cache.TryGetValue(cacheKey, out string? cachedResponse))
 		{
 			return cachedResponse ?? "";
 		}
 
-        List<Episode>? desiredEpisodes = GetDesiredEpisodes(tvdbData, season, episodeNumber);
-        if (season != null && desiredEpisodes?.Count == 0)
-        {
-            var response = NewznabUtils.SerializeRss(NewznabUtils.GetEmptyRssResult());
-            _cache.Set(cacheKey, response, _cacheTimeSpan);
-            return response;
-        }
+		List<Episode>? desiredEpisodes = GetDesiredEpisodes(tvdbData, season, episodeNumber);
+		if (season != null && desiredEpisodes?.Count == 0)
+		{
+			var response = NewznabUtils.SerializeRss(NewznabUtils.GetEmptyRssResult());
+			_cache.Set(cacheKey, response, _cacheTimeSpan);
+			return response;
+		}
 
-        var mediathekViewRequestCacheKey = $"mediathekapi_{tvdbData.SeriesId}";
-        string apiResponse;
-        if (_cache.TryGetValue(mediathekViewRequestCacheKey, out string? cachedApiResponse))
-        {
-            apiResponse = cachedApiResponse ?? string.Empty;
-        }
-        else
-        {
-            var queries = new List<object>
-            {
-                new { fields = _queryFields, query = tvdbData.GermanName.Replace(" & ", " ") ?? tvdbData.Name.Replace(" & ", " ") }
-            };
+		var mediathekViewRequestCacheKey = $"mediathekapi_{tvdbData.SeriesId}";
+		string apiResponse;
+		if (_cache.TryGetValue(mediathekViewRequestCacheKey, out string? cachedApiResponse))
+		{
+			apiResponse = cachedApiResponse ?? string.Empty;
+		}
+		else
+		{
+			var queries = new List<object>
+			{
+				new { fields = _queryFields, query = tvdbData.GermanName.Replace(" & ", " ") ?? tvdbData.Name.Replace(" & ", " ") }
+			};
 
-				apiResponse = await FetchMediathekViewApiResponseAsync(queries, 10000);
-			}
+			apiResponse = await FetchMediathekViewApiResponseAsync(queries, 10000);
 
 			if (string.IsNullOrEmpty(apiResponse))
 			{
@@ -166,43 +165,43 @@ public partial class MediathekSearchService(IHttpClientFactory httpClientFactory
 		return newznabRssResponse;
 	}
 
-    private static List<Episode>? GetDesiredEpisodes(Series tvdbData, string? season, string? episodeNumber)
-    {
-        List<Episode>? desiredEpisodes;
-        if (season != null)
-        {
-            desiredEpisodes = [];
-            if (episodeNumber is null)
-            {
-                desiredEpisodes.AddRange(tvdbData.FindEpisodesBySeason(season));
-                if (season.Length == 4 && int.TryParse(season, out var year))
-                {
-                    if (year >= 1900 && year <= 2100)
-                    {
-                        desiredEpisodes.AddRange(tvdbData.FindEpisodesByAirYear(year));
-                        desiredEpisodes = desiredEpisodes.Distinct().ToList();
-                    }
-                }
-            }
-            else
-            {
-                Episode? desiredEpisode;
-                if (season?.Length == 4 && episodeNumber.Contains('/'))
-                {
-                    var episodeNumberSplitted = episodeNumber?.Split('/');
-                    if (episodeNumberSplitted?.Length == 2 && DateTime.TryParse($"{season}-{episodeNumberSplitted[0]}-{episodeNumberSplitted[1]}", out DateTime searchAirDate))
-                    {
-                        desiredEpisode = tvdbData.FindEpisodeByAirDate(searchAirDate);
-                    }
-                    else
-                    {
-                        desiredEpisode = null;
-                    }
-                }
-                else
-                {
-                    desiredEpisode = tvdbData.FindEpisodeBySeasonAndNumber(season, episodeNumber);
-                }
+	private static List<Episode>? GetDesiredEpisodes(Series tvdbData, string? season, string? episodeNumber)
+	{
+		List<Episode>? desiredEpisodes;
+		if (season != null)
+		{
+			desiredEpisodes = [];
+			if (episodeNumber is null)
+			{
+				desiredEpisodes.AddRange(tvdbData.FindEpisodesBySeason(season));
+				if (season.Length == 4 && int.TryParse(season, out var year))
+				{
+					if (year >= 1900 && year <= 2100)
+					{
+						desiredEpisodes.AddRange(tvdbData.FindEpisodesByAirYear(year));
+						desiredEpisodes = desiredEpisodes.Distinct().ToList();
+					}
+				}
+			}
+			else
+			{
+				Episode? desiredEpisode;
+				if (season?.Length == 4 && episodeNumber.Contains('/'))
+				{
+					var episodeNumberSplitted = episodeNumber?.Split('/');
+					if (episodeNumberSplitted?.Length == 2 && DateTime.TryParse($"{season}-{episodeNumberSplitted[0]}-{episodeNumberSplitted[1]}", out DateTime searchAirDate))
+					{
+						desiredEpisode = tvdbData.FindEpisodeByAirDate(searchAirDate);
+					}
+					else
+					{
+						desiredEpisode = null;
+					}
+				}
+				else
+				{
+					desiredEpisode = tvdbData.FindEpisodeBySeasonAndNumber(season, episodeNumber);
+				}
 
 				if (desiredEpisode != null)
 				{
@@ -227,44 +226,44 @@ public partial class MediathekSearchService(IHttpClientFactory httpClientFactory
 
 		var paginatedItems = items.Skip(offset).Take(limit).ToList();
 
-        // TODO: use Factory
-        var rss = new Rss
-        {
-            Channel = new Channel
-            {
-                Title = "MediathekArr",
-                Description = "MediathekArr API results",
-                Response = new Response
-                {
-                    Offset = offset,
-                    Total = items.Count
-                },
-                Items = paginatedItems,
-            }
-        };
+		// TODO: use Factory
+		var rss = new Rss
+		{
+			Channel = new Channel
+			{
+				Title = "MediathekArr",
+				Description = "MediathekArr API results",
+				Response = new Response
+				{
+					Offset = offset,
+					Total = items.Count
+				},
+				Items = paginatedItems,
+			}
+		};
 
 		return NewznabUtils.SerializeRss(rss);
 	}
 
-    private static List<MatchedEpisodeInfo> ApplyDesiredEpisodeFilter(List<MatchedEpisodeInfo> matchedEpisodes, List<Episode>? desiredEpisodes)
-    {
-        if (desiredEpisodes is null)
-        {
-            return matchedEpisodes;
-        }
+	private static List<MatchedEpisodeInfo> ApplyDesiredEpisodeFilter(List<MatchedEpisodeInfo> matchedEpisodes, List<Episode>? desiredEpisodes)
+	{
+		if (desiredEpisodes is null)
+		{
+			return matchedEpisodes;
+		}
 
-        return [.. matchedEpisodes.Where(matched =>
-            desiredEpisodes.Any(desiredEpisode =>
-                desiredEpisode.SeasonNumber == matched.Episode.SeasonNumber &&
-                desiredEpisode.EpisodeNumber == matched.Episode.EpisodeNumber
-            )
-        )];
-    }
+		return [.. matchedEpisodes.Where(matched =>
+			desiredEpisodes.Any(desiredEpisode =>
+				desiredEpisode.SeasonNumber == matched.Episode.SeasonNumber &&
+				desiredEpisode.EpisodeNumber == matched.Episode.EpisodeNumber
+			)
+		)];
+	}
 
-    private async Task<MatchedEpisodeInfo?> MatchesSeasonAndEpisode(ApiResultItem item, Ruleset ruleset)
-    {
-        // Fetch TVDB episode information
-        var tvdbData = await _itemLookupService.GetShowInfoById(ruleset.Media.TvdbId);
+	private async Task<MatchedEpisodeInfo?> MatchesSeasonAndEpisode(ApiResultItem item, Ruleset ruleset)
+	{
+		// Fetch TVDB episode information
+		var tvdbData = await _itemLookupService.GetShowInfoById(ruleset.Media.TvdbId);
 
 		if (tvdbData?.Episodes == null || tvdbData.Episodes.Count == 0)
 		{
@@ -327,10 +326,10 @@ public partial class MediathekSearchService(IHttpClientFactory httpClientFactory
 		);
 	}
 
-    private async Task<MatchedEpisodeInfo?> MatchesAbsoluteEpisodeNumber(ApiResultItem item, Ruleset ruleset)
-    {
-        // Fetch TVDB episode information
-        var tvdbData = await _itemLookupService.GetShowInfoById(ruleset.Media.TvdbId);
+	private async Task<MatchedEpisodeInfo?> MatchesAbsoluteEpisodeNumber(ApiResultItem item, Ruleset ruleset)
+	{
+		// Fetch TVDB episode information
+		var tvdbData = await _itemLookupService.GetShowInfoById(ruleset.Media.TvdbId);
 
 		if (tvdbData?.Episodes == null || tvdbData.Episodes.Count == 0)
 		{
@@ -395,10 +394,10 @@ public partial class MediathekSearchService(IHttpClientFactory httpClientFactory
 		return match.Success && match.Groups.Count > 1 ? match.Groups[1].Value : null;
 	}
 
-    private async Task<MatchedEpisodeInfo?> MatchesItemTitleIncludes(ApiResultItem item, Ruleset ruleset)
-    {
-        // Fetch TVDB episode information
-        var tvdbData = await _itemLookupService.GetShowInfoById(ruleset.Media.TvdbId);
+	private async Task<MatchedEpisodeInfo?> MatchesItemTitleIncludes(ApiResultItem item, Ruleset ruleset)
+	{
+		// Fetch TVDB episode information
+		var tvdbData = await _itemLookupService.GetShowInfoById(ruleset.Media.TvdbId);
 
 		if (tvdbData?.Episodes == null || tvdbData.Episodes.Count == 0)
 		{
@@ -432,10 +431,10 @@ public partial class MediathekSearchService(IHttpClientFactory httpClientFactory
 			);
 	}
 
-    private async Task<MatchedEpisodeInfo?> MatchesItemTitleExact(ApiResultItem item, Ruleset ruleset)
-		{
-			// Fetch TVDB episode information
-			var tvdbData = await _itemLookupService.GetShowInfoById(ruleset.Media.TvdbId);
+	private async Task<MatchedEpisodeInfo?> MatchesItemTitleExact(ApiResultItem item, Ruleset ruleset)
+	{
+		// Fetch TVDB episode information
+		var tvdbData = await _itemLookupService.GetShowInfoById(ruleset.Media.TvdbId);
 
 		if (tvdbData?.Episodes == null || tvdbData.Episodes.Count == 0)
 		{
@@ -459,7 +458,7 @@ public partial class MediathekSearchService(IHttpClientFactory httpClientFactory
 			.Equals(formattedConstructedTitle, StringComparison.OrdinalIgnoreCase))
 			.ToArray();
 
-        Episode? matchedEpisode = GuessCorrectMatch(item, matchedEpisodes);
+		Episode? matchedEpisode = GuessCorrectMatch(item, matchedEpisodes);
 
 		if (matchedEpisode != null)
 		{
@@ -474,29 +473,29 @@ public partial class MediathekSearchService(IHttpClientFactory httpClientFactory
 		return null;
 	}
 
-		private static Episode? GuessCorrectMatch(ApiResultItem item, Episode[] matchedEpisodes)
+	private static Episode? GuessCorrectMatch(ApiResultItem item, Episode[] matchedEpisodes)
+	{
+		if (matchedEpisodes.Length == 1)
 		{
-			if (matchedEpisodes.Length == 1)
-			{
-				return matchedEpisodes[0];
-			}
-			else // multiple matched episodes found, we try to guess which one is the best
-			{
-				// Try to match by aired date
-				var matchedEpisodeByAirDate = matchedEpisodes.FirstOrDefault(episode => episode.Aired == DateTimeOffset.FromUnixTimeSeconds(item.Timestamp).UtcDateTime.Date);
-				if (matchedEpisodeByAirDate != null)
-				{
-					return matchedEpisodeByAirDate;
-				}
-            // chose the newest one
-            return matchedEpisodes.OrderByDescending(episode => episode.Aired).FirstOrDefault();
-			}
+			return matchedEpisodes[0];
 		}
+		else // multiple matched episodes found, we try to guess which one is the best
+		{
+			// Try to match by aired date
+			var matchedEpisodeByAirDate = matchedEpisodes.FirstOrDefault(episode => episode.Aired == DateTimeOffset.FromUnixTimeSeconds(item.Timestamp).UtcDateTime.Date);
+			if (matchedEpisodeByAirDate != null)
+			{
+				return matchedEpisodeByAirDate;
+			}
+			// chose the newest one
+			return matchedEpisodes.OrderByDescending(episode => episode.Aired).FirstOrDefault();
+		}
+	}
 
-		private async Task<MatchedEpisodeInfo?> MatchesItemTitleEqualsAirdate(ApiResultItem item, Ruleset ruleset)
-    {
-        // Fetch TVDB episode information
-        var tvdbData = await _itemLookupService.GetShowInfoById(ruleset.Media.TvdbId);
+	private async Task<MatchedEpisodeInfo?> MatchesItemTitleEqualsAirdate(ApiResultItem item, Ruleset ruleset)
+	{
+		// Fetch TVDB episode information
+		var tvdbData = await _itemLookupService.GetShowInfoById(ruleset.Media.TvdbId);
 
 		if (tvdbData?.Episodes == null || tvdbData.Episodes.Count == 0)
 		{
@@ -634,10 +633,10 @@ public partial class MediathekSearchService(IHttpClientFactory httpClientFactory
 		return _rulesetsByTopic.TryGetValue(topic, out var rulesets) ? rulesets : [];
 	}
 
-    private async Task<(List<MatchedEpisodeInfo> matchedEpisodes, List<ApiResultItem> unmatchedFilteredResultItems)> ApplyRulesetFilters(List<ApiResultItem> results, Series? tvdbData = null)
-    {
-        var matchedFilteredResults = new List<MatchedEpisodeInfo>();
-        var unmatchedFilteredResults = new List<ApiResultItem>(results);
+	private async Task<(List<MatchedEpisodeInfo> matchedEpisodes, List<ApiResultItem> unmatchedFilteredResultItems)> ApplyRulesetFilters(List<ApiResultItem> results, Series? tvdbData = null)
+	{
+		var matchedFilteredResults = new List<MatchedEpisodeInfo>();
+		var unmatchedFilteredResults = new List<ApiResultItem>(results);
 
 		foreach (var item in results)
 		{
@@ -647,10 +646,10 @@ public partial class MediathekSearchService(IHttpClientFactory httpClientFactory
 				continue;
 			}
 
-            // Get applicable rulesets for the topic or specific TVDB data
-            var rulesets = tvdbData is null
-                ? GetRulesetsForTopic(item.Topic)
-                : GetRulesetsForTopic(item.Topic).Where(r => r.Media?.TvdbId == tvdbData.SeriesId).ToList();
+			// Get applicable rulesets for the topic or specific TVDB data
+			var rulesets = tvdbData is null
+				? GetRulesetsForTopic(item.Topic)
+				: GetRulesetsForTopic(item.Topic).Where(r => r.Media?.TvdbId == tvdbData.SeriesId).ToList();
 
 			foreach (var ruleset in rulesets)
 			{
@@ -865,28 +864,28 @@ public partial class MediathekSearchService(IHttpClientFactory httpClientFactory
 		// Generate the full URL for the fake_nzb_download endpoint
 		var fakeDownloadUrl = $"/api/fake_nzb_download?encodedVideoUrl={encodedVideoUrl}&encodedSubtitleUrl={encodedSubtitleUrl}&encodedTitle={encodedTitle}";
 
-        return new Item
-        {
-            Title = translatedTitle,
-            Guid = new NewznabGuid
-            {
-                IsPermaLink = true,
-					Value = $"{item.UrlWebsite}#{quality}{(episodeType == EpisodeType.Daily ? "" : "-d")}-{item.Language}",
-				},
-            Link = url,
-            Comments = item.UrlWebsite,
-            PubDate = DateTimeOffset.FromUnixTimeSeconds(item.Timestamp).ToString("R"),
-            Category = category,
-            Description = item.Description,
-            Enclosure = new Enclosure
-            {
-                Url = fakeDownloadUrl,
-                Length = adjustedSize,
-                Type = NewznabUtils.Application.Nzb
-            },
-            Attributes = NewznabUtils.GenerateAttributes(matchedEpisodeInfo, categoryValues, episodeType)
-        };
-    }
+		return new Item
+		{
+			Title = translatedTitle,
+			Guid = new NewznabGuid
+			{
+				IsPermaLink = true,
+				Value = $"{item.UrlWebsite}#{quality}{(episodeType == EpisodeType.Daily ? "" : "-d")}-{item.Language}",
+			},
+			Link = url,
+			Comments = item.UrlWebsite,
+			PubDate = DateTimeOffset.FromUnixTimeSeconds(item.Timestamp).ToString("R"),
+			Category = category,
+			Description = item.Description,
+			Enclosure = new Enclosure
+			{
+				Url = fakeDownloadUrl,
+				Length = adjustedSize,
+				Type = NewznabUtils.Application.Nzb
+			},
+			Attributes = NewznabUtils.GenerateAttributes(matchedEpisodeInfo, categoryValues, episodeType)
+		};
+	}
 
 	private static string GenerateTitle(MatchedEpisodeInfo matchedEpisodeInfo, string quality, EpisodeType episodeType)
 	{
