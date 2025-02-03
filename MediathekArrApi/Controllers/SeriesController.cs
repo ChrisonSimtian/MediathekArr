@@ -35,7 +35,7 @@ public class SeriesController(ILogger<SeriesController> logger, MediathekArrCont
 
         /* Return cached Value */
         var cacheKey = $"Series_{tvdbId}";
-        if(MemoryCache.TryGetValue(cacheKey, out Series? cachedResult) && cachedResult is not null)
+        if (MemoryCache.TryGetValue(cacheKey, out Series? cachedResult) && cachedResult is not null)
         {
             Logger.LogTrace("Found {tvdbId} in Memory Cache", tvdbId);
             return Ok(cachedResult);
