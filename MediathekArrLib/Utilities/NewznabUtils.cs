@@ -5,6 +5,15 @@ using System.Xml.Serialization;
 using Attribute = MediathekArr.Models.Newznab.Attribute;
 
 namespace MediathekArr.Utilities;
+
+/// <summary>
+/// Utility class for Newznab related operations
+/// </summary>
+/// <remarks>
+/// Standards:
+/// - https://newznab.readthedocs.io/en/latest/misc/api.html
+/// - https://github.com/theotherp/nzbhydra2/wiki/Tutorial-(Indexers,-newznab,-API,-*arr,-etc.)
+/// </remarks>
 public static class NewznabUtils
 {
     public static class Application
@@ -47,7 +56,7 @@ public static class NewznabUtils
 
     public static List<Attribute> GenerateAttributes(MatchedEpisodeInfo matchedEpisodeInfo, string[] categoryValues, EpisodeType episodeType)
     {
-        return GenerateAttributes(matchedEpisodeInfo.Item, matchedEpisodeInfo.Episode.PaddedSeason, matchedEpisodeInfo.Episode.PaddedEpisode, categoryValues, episodeType, matchedEpisodeInfo.Episode.Aired); 
+        return GenerateAttributes(matchedEpisodeInfo.Item, matchedEpisodeInfo.Episode.PaddedSeason, matchedEpisodeInfo.Episode.PaddedEpisode, categoryValues, episodeType, matchedEpisodeInfo.Episode.Aired);
     }
     public static string SerializeRss(Rss rss)
     {
