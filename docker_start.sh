@@ -30,6 +30,11 @@ adjust_mounted_volumes() {
 if [ "$1" == "--user-mode" ]; then
     shift
 
+    # Start MediathekArrApi
+    cd /app/MediathekArrApi
+    dotnet MediathekArrApi.dll &
+    API_PID=$!
+
     # Start MediathekArrServer
     cd /app/MediathekArrServer
     dotnet MediathekArrServer.dll &
@@ -42,6 +47,10 @@ if [ "$1" == "--user-mode" ]; then
 
     # Monitor processes
     while true; do
+        if ! kill -0 $API_PID 2>/dev/null; then
+            echo "MediathekArrApi crashed. Exiting."
+            exit 1
+        fi
         if ! kill -0 $SERVER_PID 2>/dev/null; then
             echo "MediathekArrServer crashed. Exiting."
             exit 1
