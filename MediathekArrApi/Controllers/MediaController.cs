@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using MediathekArr.Models.Rulesets;
 using Microsoft.AspNetCore.OData.Query;
+using Microsoft.AspNetCore.OData.Routing.Controllers;
+using Microsoft.EntityFrameworkCore;
 
 namespace MediathekArr.Controllers;
 
@@ -15,8 +17,7 @@ public class MediaController(ILogger<MediaController> logger, MediathekArrContex
     /// </summary>
     /// <returns></returns>
     [HttpGet]
-    [EnableQuery]
-    public IQueryable<Media> Get() => context.Media;
+    public async Task<ActionResult<List<Media>>> Get() => await context.Media.ToListAsync();
 
     /// <summary>
     /// Create new Media record

@@ -80,35 +80,12 @@ public static class Bootstrapper
         {
             options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
         })
-        /* Add OData Support */
-        .AddOData(options =>
-        {
-            options.Select().Filter().OrderBy().Count().Expand();
-            options.AddRouteComponents("odata", GetEdmModel());
-        })
         ;
 
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
 
         return builder;
-    }
-
-    /// <summary>
-    /// Get the EDM Model for OData
-    /// </summary>
-    /// <returns></returns>
-    public static IEdmModel GetEdmModel()
-    {
-        var builder = new ODataConventionModelBuilder();
-
-        /* Define Entities to support in OData */
-        builder.EntitySet<Series>("Series");
-        builder.EntitySet<Episode>("Episodes");
-        builder.EntitySet<Media>("Media");
-        builder.EntitySet<Ruleset>("Rulesets");
-
-        return builder.GetEdmModel();
     }
 
     /// <summary>
@@ -141,9 +118,6 @@ public static class Bootstrapper
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
-            /* OData Debugging */
-            app.UseODataRouteDebug();
-
             /* Open API definitions */
             app.MapOpenApi();
             app.MapScalarApiReference();

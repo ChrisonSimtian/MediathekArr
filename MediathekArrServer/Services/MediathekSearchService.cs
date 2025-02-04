@@ -11,14 +11,16 @@ using MediathekArr.Utilities;
 using Microsoft.Extensions.Caching.Memory;
 using MatchType = MediathekArr.Models.Rulesets.MatchType;
 using MediathekArr.Models.Tvdb;
+using MediathekArr.Clients;
 
 namespace MediathekArr.Services;
 
-public partial class MediathekSearchService(IHttpClientFactory httpClientFactory, IMemoryCache cache, ItemLookupService itemLookupService)
+public partial class MediathekSearchService(IHttpClientFactory httpClientFactory, IRulesetsClient rulesetsClient, IMemoryCache cache, ItemLookupService itemLookupService)
 {
+	private readonly HttpClient _httpClient = httpClientFactory.CreateClient(Constants.MediathekArrConstants.Mediathek_HttpClient);
+
 	private readonly IMemoryCache _cache = cache;
 	private readonly ItemLookupService _itemLookupService = itemLookupService;
-	private readonly HttpClient _httpClient = httpClientFactory.CreateClient(Constants.MediathekArrConstants.Mediathek_HttpClient);
 	private readonly TimeSpan _cacheTimeSpan = TimeSpan.FromMinutes(55);
 	private static readonly string[] _skipTitleKeywords = ["Audiodeskription", "Hörfassung", "(klare Sprache)", "Gebärdensprache", "Trailer", "Outtakes:"];
 	private static readonly string[] _skipUrlKeywords = ["YXVkaW9kZXNrcmlwdGlvbg"]; // base64 for ARD, YXVkaW9kZXNrcmlwdGlvbg = audiodeskription
@@ -28,33 +30,12 @@ public partial class MediathekSearchService(IHttpClientFactory httpClientFactory
 	public async Task UpdateRulesetsAsync()
 	{
 		var allRulesets = new List<Ruleset>();
-		int currentPage = 1;
 
-		while (true && currentPage < 100)
-		{
-			var response = await _httpClient.GetAsync($"https://mediathekarr.pcjones.de/metadata/api/rulesets.php?page={currentPage++}");
-			if (response.IsSuccessStatusCode)
-			{
-				var responseContent = await response.Content.ReadAsStringAsync();
-				var rulesetResponse = JsonSerializer.Deserialize<RulesetApiResponse>(responseContent);
-
-				if (rulesetResponse?.Rulesets != null)
-				{
-					allRulesets.AddRange(rulesetResponse.Rulesets);
-				}
-
-				if (rulesetResponse?.Pagination?.CurrentPage >= rulesetResponse?.Pagination.TotalPages)
-				{
-					break;
-				}
-			}
-			else
-			{
-				// Exit if the request fails
-				Console.WriteLine("Failed to fetch rulesets from the API.");
-				break;
-			}
-		}
+		var result = await rulesetsClient.RulesetsGetAsync();
+		if (result.StatusCode == (int)System.Net.HttpStatusCode.OK)
+			allRulesets.AddRange(result.Result);
+		else
+			Console.WriteLine("Failed to fetch rulesets from the API.");
 
 		_rulesetsByTopic.Clear();
 		foreach (var ruleset in allRulesets)

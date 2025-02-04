@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using MediathekArr.Models.Rulesets;
 using Microsoft.AspNetCore.OData.Query;
+using Microsoft.AspNetCore.OData.Routing.Controllers;
+using Microsoft.EntityFrameworkCore;
 
 namespace MediathekArr.Controllers;
 
@@ -15,8 +17,7 @@ public class RulesetsController(ILogger<RulesetsController> logger, MediathekArr
     /// </summary>
     /// <returns></returns>
     [HttpGet]
-    [EnableQuery]
-    public IQueryable<Ruleset> Get() => context.Rulesets;
+    public async Task<ActionResult<List<Ruleset>>> Get() => await context.Rulesets.ToListAsync();
 
     /// <summary>
     /// Create new Ruleset record
