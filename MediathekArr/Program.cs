@@ -26,18 +26,6 @@ builder.Logging.AddMediathekArrLogger();
 builder.Services.AddOpenApi();
 
 builder.Services.AddMemoryCache();
-builder.Services.AddHttpClient(MediathekArr.Constants.MediathekArrConstants.Mediathek_HttpClient, client =>
-{
-    client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:131.0) Gecko/20100101 Firefox/131.0");
-    client.DefaultRequestHeaders.AcceptEncoding.ParseAdd("gzip");
-    client.DefaultRequestHeaders.Accept.ParseAdd(MediaTypeNames.Application.Json);
-})
-.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-{
-    AutomaticDecompression = System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Deflate
-})
-.AddHttpMessageHandler<HttpClientLoggingHandler>(); // Add sensitive query parameters to log output
-builder.Services.TryAddTransient<HttpClientLoggingHandler>();
 builder.Services.AddSingleton<DownloadService>();
 
 var app = builder.Build();

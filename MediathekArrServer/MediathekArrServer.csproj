@@ -21,6 +21,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\MediathekArrApiClient\MediathekArrApiClient.csproj" />
 		<ProjectReference Include="..\MediathekArrLib\MediathekArrLib.csproj" />
+		<ProjectReference Include="..\MediathekViewWebApiClient\MediathenViewWebApiClient.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

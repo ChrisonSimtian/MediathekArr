@@ -6,6 +6,10 @@ using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+/* MediathekViewWeb Api Client */
+builder.Configuration.AddMediathekViewWebApiClient();
+builder.Services.AddMediathekViewWebApiClient(builder.Configuration);
+
 builder.Services.AddControllers();
 builder.Logging.AddMediathekArrLogger();
 builder.Services.AddOpenApi();

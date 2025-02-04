@@ -1,11 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 using MediathekArr.Infrastructure;
-using MediathekArr.Models.Rulesets;
-using MediathekArr.Models.Tvdb;
-using Microsoft.AspNetCore.OData;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OData.Edm;
-using Microsoft.OData.ModelBuilder;
 using Scalar.AspNetCore;
 
 namespace Microsoft.Extensions.DependencyInjection;
