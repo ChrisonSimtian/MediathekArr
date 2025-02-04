@@ -20,17 +20,17 @@ public class NewznabUtilsUnitTests
         rssResult = NewznabUtils.GetEmptyRssResult();
 
         // Assert
-        rssResult.Should().NotBeNull();
+        rssResult.ShouldNotBeNull();
 
         // Assert Channel
-        rssResult.Channel.Should().NotBeNull();
-        rssResult.Channel.Title.Should().BeEquivalentTo("MediathekArr");
-        rssResult.Channel.Description.Should().BeEquivalentTo("MediathekArr API results");
-        rssResult.Channel.Items.Should().BeEmpty();
+        rssResult.Channel.ShouldNotBeNull();
+        rssResult.Channel.Title.ShouldBeEquivalentTo("MediathekArr");
+        rssResult.Channel.Description.ShouldBeEquivalentTo("MediathekArr API results");
+        rssResult.Channel.Items.ShouldBeEmpty();
 
         // Assert Channel Response
-        rssResult.Channel.Response.Should().NotBeNull();
-        rssResult.Channel.Response.Offset.Should().Be(0);
-        rssResult.Channel.Response.Total.Should().Be(0);
+        rssResult.Channel.Response.ShouldNotBeNull();
+        rssResult.Channel.Response.Offset.ShouldBe(0);
+        rssResult.Channel.Response.Total.ShouldBe(0);
     }
 }

@@ -23,7 +23,7 @@ public class MediaController(ILogger<MediaController> logger, MediathekArrContex
     /// </summary>
     /// <param name="media"></param>
     [HttpPost]
-    public async void Post([FromBody] Media media)
+    public async Task Post([FromBody] Media media)
     {
         context.Media.Add(media);
         await context.SaveChangesAsync();
@@ -34,7 +34,7 @@ public class MediaController(ILogger<MediaController> logger, MediathekArrContex
     /// </summary>
     /// <param name="media"></param>
     [HttpPut]
-    public async void Put([FromBody] Media media)
+    public async Task Put([FromBody] Media media)
     {
         context.Media.Update(media);
         await context.SaveChangesAsync();
@@ -45,7 +45,7 @@ public class MediaController(ILogger<MediaController> logger, MediathekArrContex
     /// </summary>
     /// <param name="media"></param>
     [HttpDelete]
-    public async void Delete([FromBody] Media media)
+    public async Task Delete([FromBody] Media media)
     {
         context.Media.Remove(media);
         await context.SaveChangesAsync();

@@ -23,7 +23,7 @@ public class NumberOrEmptyConverterUnitTests
         var result = converter.Read(ref reader, typeof(int), new JsonSerializerOptions());
 
         // Assert
-        result.Should().Be(0);
+        result.ShouldBe(0);
     }
 
     [Fact]
@@ -39,7 +39,7 @@ public class NumberOrEmptyConverterUnitTests
         var result = converter.Read(ref reader, typeof(int), new JsonSerializerOptions());
 
         // Assert
-        result.Should().Be(0);
+        result.ShouldBe(0);
     }
 
     [Fact]
@@ -55,7 +55,7 @@ public class NumberOrEmptyConverterUnitTests
         var result = converter.Read(ref reader, typeof(int), new JsonSerializerOptions());
 
         // Assert
-        result.Should().Be(123);
+        result.ShouldBe(123);
     }
 
     [Fact]
@@ -71,7 +71,7 @@ public class NumberOrEmptyConverterUnitTests
         var result = converter.Read(ref reader, typeof(int), new JsonSerializerOptions());
 
         // Assert
-        result.Should().Be(123);
+        result.ShouldBe(123);
     }
 
     [Fact]
@@ -90,7 +90,7 @@ public class NumberOrEmptyConverterUnitTests
         };
 
         // Assert
-        var caughtException = act.Should().ThrowExactly<JsonException>();
+        var caughtException = act.ShouldThrow<JsonException>();
     }
 
     [Fact]
@@ -109,7 +109,7 @@ public class NumberOrEmptyConverterUnitTests
         };
 
         // Assert
-        var caughtException = act.Should().ThrowExactly<NotSupportedException>();
+        var caughtException = act.ShouldThrow<NotSupportedException>();
     }
 
     [Fact]
@@ -126,6 +126,6 @@ public class NumberOrEmptyConverterUnitTests
         var json = Encoding.UTF8.GetString(stream.ToArray());
 
         // Assert
-        json.Should().Be("123");
+        json.ShouldBe("123");
     }
 }

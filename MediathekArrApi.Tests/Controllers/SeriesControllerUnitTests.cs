@@ -20,7 +20,7 @@ public class SeriesControllerUnitTests
         OutputHelper = outputHelper;
 
         var builder = new HostApplicationBuilder();
-        
+
         var config = builder.Configuration
             .AddTvdbClient()
             .Build();
@@ -55,6 +55,6 @@ public class SeriesControllerUnitTests
         // Act
         var result = await Controller.GetSeriesData(tvdbId);
         // Assert
-        result.Should().NotBeNull();
+        result.ShouldNotBeNull();
     }
 }

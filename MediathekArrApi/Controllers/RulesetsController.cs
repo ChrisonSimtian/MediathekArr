@@ -23,7 +23,7 @@ public class RulesetsController(ILogger<RulesetsController> logger, MediathekArr
     /// </summary>
     /// <param name="ruleset"></param>
     [HttpPost]
-    public async void Post([FromBody] Ruleset ruleset)
+    public async Task Post([FromBody] Ruleset ruleset)
     {
         context.Rulesets.Add(ruleset);
         await context.SaveChangesAsync();
@@ -34,7 +34,7 @@ public class RulesetsController(ILogger<RulesetsController> logger, MediathekArr
     /// </summary>
     /// <param name="ruleset"></param>
     [HttpPut]
-    public async void Put([FromBody] Ruleset ruleset)
+    public async Task Put([FromBody] Ruleset ruleset)
     {
         context.Rulesets.Update(ruleset);
         await context.SaveChangesAsync();
@@ -45,7 +45,7 @@ public class RulesetsController(ILogger<RulesetsController> logger, MediathekArr
     /// </summary>
     /// <param name="ruleset"></param>
     [HttpDelete]
-    public async void Delete([FromBody] Ruleset ruleset)
+    public async Task Delete([FromBody] Ruleset ruleset)
     {
         context.Rulesets.Remove(ruleset);
         await context.SaveChangesAsync();
