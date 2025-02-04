@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace MediathekArr.Models.Rulesets;
 
+[Table("Rulesets", Schema = "Rulesets")]
 public class Ruleset
 {
     [Key]

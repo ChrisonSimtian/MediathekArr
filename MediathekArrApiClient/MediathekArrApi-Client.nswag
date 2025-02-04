@@ -48,7 +48,8 @@
       "className": "{controller}Client",
       "operationGenerationMode": "MultipleClientsFromFirstTagAndPathSegments",
       "additionalNamespaceUsages": [
-        "MediathekArr.Models.Tvdb"
+        "MediathekArr.Models.Tvdb",
+        "MediathekArr.Models.Rulesets"
       ],
       "additionalContractNamespaceUsages": [],
       "generateOptionalParameters": false,
