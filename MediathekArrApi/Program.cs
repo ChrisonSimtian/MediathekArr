@@ -6,6 +6,6 @@ builder.AddMediathekArrApi();
 
 var app = builder.Build();
 
-app.AddMediathekArrApi();
+app.UseMediathekArrApi();
 
 app.Run();

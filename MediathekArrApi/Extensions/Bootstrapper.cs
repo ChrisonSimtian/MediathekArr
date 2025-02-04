@@ -1,18 +1,32 @@
 ﻿using System.Text.Json.Serialization;
 using MediathekArr.Infrastructure;
+using MediathekArr.Models.Rulesets;
+using MediathekArr.Models.Tvdb;
 using Microsoft.AspNetCore.OData;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OData.Edm;
+using Microsoft.OData.ModelBuilder;
 using Scalar.AspNetCore;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
 public static class Bootstrapper
 {
+    /// <summary>
+    /// Configure MediathekArr API
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <returns></returns>
     public static IConfigurationBuilder AddMediathekArrApi(this IConfigurationBuilder builder)
     {
         return builder;
     }
 
+    /// <summary>
+    /// Set up Services for MediathekArr API
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <returns></returns>
     public static WebApplicationBuilder AddMediathekArrApi(this WebApplicationBuilder builder)
     {
         builder.Logging.AddMediathekArrLogger();
@@ -67,15 +81,43 @@ public static class Bootstrapper
             options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
         })
         /* Add OData Support */
-        .AddOData(opt => opt.Select().Filter().OrderBy().Count().Expand())
+        .AddOData(options =>
+        {
+            options.Select().Filter().OrderBy().Count().Expand();
+            options.AddRouteComponents("odata", GetEdmModel());
+        })
         ;
+
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
 
         return builder;
     }
 
-    public static IApplicationBuilder AddMediathekArrApi(this WebApplication app)
+    /// <summary>
+    /// Get the EDM Model for OData
+    /// </summary>
+    /// <returns></returns>
+    public static IEdmModel GetEdmModel()
+    {
+        var builder = new ODataConventionModelBuilder();
+
+        /* Define Entities to support in OData */
+        builder.EntitySet<Series>("Series");
+        builder.EntitySet<Episode>("Episodes");
+        builder.EntitySet<Media>("Media");
+        builder.EntitySet<Ruleset>("Rulesets");
+
+        return builder.GetEdmModel();
+    }
+
+    /// <summary>
+    /// Start MediathekArr API
+    /// </summary>
+    /// <param name="app"></param>
+    /// <returns></returns>
+    /// <remarks>Runs DB migrations</remarks>
+    public static IApplicationBuilder UseMediathekArrApi(this WebApplication app)
     {
         /* Run migrations for existing Databases */
         using var scope = app.Services.CreateScope();
@@ -99,13 +141,18 @@ public static class Bootstrapper
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
+            /* OData Debugging */
+            app.UseODataRouteDebug();
+
+            /* Open API definitions */
             app.MapOpenApi();
             app.MapScalarApiReference();
+
+            /* Error Handling */
             app.UseDeveloperExceptionPage();
         }
 
         app.UseHttpsRedirection();
-
         app.UseAuthorization();
 
         app.MapControllers();
