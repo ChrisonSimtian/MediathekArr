@@ -10,6 +10,8 @@ Thanks to https://github.com/PCJones/UmlautAdaptarr for the German Title API
 
 Thanks to https://tvdb.com for the metadata API
 
+Thanks to https://github.com/ChrisonSimtian/TvdbApi for the TVDB API Client for C#
+
 Example screenshot:
 ![grafik](https://github.com/user-attachments/assets/654c42fa-4eab-4b6e-b1c7-9b23192c7a98)
 
