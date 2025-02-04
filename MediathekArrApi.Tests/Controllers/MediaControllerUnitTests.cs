@@ -26,12 +26,13 @@ public class MediaControllerUnitTests
             .AddTvdbClient()
             .Build();
 
-        builder.Services.AddDbContext<MediathekArrContext>(options => options.UseSqlite("Data Source=tvdb_cache.sqlite"));
+        builder.Services.AddDbContext<MediathekArrContext>(options => options.UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()));
 
         builder.Services
             .AddLogging((builder) => builder.AddXUnit(OutputHelper))
             .AddTvdbClient(config);
 
+        builder.Services.AddMemoryCache();
         builder.Services.TryAddSingleton<MediaController>();
 
         ServiceProvider = builder.Services.BuildServiceProvider();
