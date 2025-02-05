@@ -12,10 +12,11 @@ using Microsoft.Extensions.Caching.Memory;
 using MatchType = MediathekArr.Models.Rulesets.MatchType;
 using MediathekArr.Models.Tvdb;
 using MediathekArr.Clients;
+using MediathekViewWeb.Clients;
 
 namespace MediathekArr.Services;
 
-public partial class MediathekSearchService(IHttpClientFactory httpClientFactory, IRulesetsClient rulesetsClient, IMemoryCache cache, ItemLookupService itemLookupService)
+public partial class MediathekSearchService(IHttpClientFactory httpClientFactory, QueryClient queryClient, IRulesetsClient rulesetsClient, IMemoryCache cache, ItemLookupService itemLookupService)
 {
 	private readonly HttpClient _httpClient = httpClientFactory.CreateClient(Constants.MediathekArrConstants.Mediathek_HttpClient);
 
@@ -61,6 +62,17 @@ public partial class MediathekSearchService(IHttpClientFactory httpClientFactory
 
 	private async Task<string> FetchMediathekViewApiResponseAsync(List<object> queries, int size)
 	{
+		var result = await queryClient.QueryAsync(
+			new
+			{
+				queries,
+				sortBy = "filmlisteTimestamp",
+				sortOrder = "desc",
+				future = true,
+				offset = 0,
+				size
+			});
+
 		var requestBody = new
 		{
 			queries,
