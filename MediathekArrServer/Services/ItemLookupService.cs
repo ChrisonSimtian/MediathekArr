@@ -49,6 +49,7 @@ public class ItemLookupService(IHttpClientFactory httpClientFactory, IConfigurat
 
         if (tvdbInfo?.Status == "error")
         {
+            // TODO log error message
             return null;
         }
 
