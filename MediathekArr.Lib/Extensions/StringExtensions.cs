@@ -1,9 +1,12 @@
 ﻿using System.Globalization;
 using System.Text;
 
-namespace MediathekArr.Utilities;
+namespace MediathekArr.Extensions;
 public static class StringExtensions
 {
+    /// <summary>
+    /// Removes accents from a string but keeps German umlauts.
+    /// </summary>
     public static string RemoveAccentButKeepGermanUmlauts(this string text)
     {
         var normalizedString = text.Normalize(NormalizationForm.FormD);
@@ -22,6 +25,9 @@ public static class StringExtensions
         return stringBuilder.ToString().Normalize(NormalizationForm.FormC);
     }
 
+    /// <summary>
+    /// Removes umlauts from a string.
+    /// </summary>
     public static string RemoveUmlauts(this string text)
     {
         var normalizedString = text.Replace("ß", "ss").Normalize(NormalizationForm.FormD);

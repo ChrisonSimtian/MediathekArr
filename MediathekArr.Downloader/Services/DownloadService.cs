@@ -1,6 +1,7 @@
 ﻿using MediathekArr.Configuration;
 using MediathekArr.Models.SABnzbd;
 using MediathekArr.Utilities;
+using MediathekArr.Extensions;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Reflection;
