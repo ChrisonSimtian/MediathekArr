@@ -1,9 +1,8 @@
-﻿using MediathekArr.Models;
+﻿using MediathekArr.Configuration;
 using MediathekArr.Models.SABnzbd;
 using MediathekArr.Utilities;
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.IO.Compression;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -13,7 +12,7 @@ namespace MediathekArr.Services;
 public partial class DownloadService
 {
     private readonly ILogger<DownloadService> _logger;
-    private readonly Config _config;
+    private readonly DownloaderConfiguration _config;
     private readonly ConcurrentQueue<QueueItem> _downloadQueue = new();
     private readonly List<HistoryItem> _downloadHistory = [];
     private readonly HttpClient _httpClient;
@@ -21,7 +20,7 @@ public partial class DownloadService
     private readonly string _mkvMergePath;
     private readonly bool _isWindows;
 
-    public DownloadService(ILogger<DownloadService> logger, Config config, IHttpClientFactory httpClientFactory)
+    public DownloadService(ILogger<DownloadService> logger, DownloaderConfiguration config, IHttpClientFactory httpClientFactory)
     {
         _logger = logger;
         _config = config;
@@ -80,20 +79,20 @@ public partial class DownloadService
             {
                 continue;
             }
-            var files = Directory.GetFiles(categoryDir);
-            foreach (var file in files)
+            var filePaths = Directory.GetFiles(categoryDir);
+            foreach (var filePath in filePaths)
             {
-                var fileInfo = new FileInfo(file);
+                var fileInfo = new FileInfo(filePath);
                 if (DateTime.UtcNow - fileInfo.LastWriteTimeUtc > TimeSpan.FromHours(48))
                 {
-                    _logger.LogInformation("Deleting abandoned file in complete directory: {file}", file);
+                    _logger.LogInformation("Deleting abandoned file in complete directory: {FilePath}", filePath);
                     try
                     {
-                        File.Delete(file);
+                        File.Delete(filePath);
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Error deleting file: {file}", file);
+                        _logger.LogError(ex, "Error deleting file: {FilePath}", filePath);
                         continue;
                     }
                 }
@@ -106,23 +105,22 @@ public partial class DownloadService
         // Ensure incomplete directory exists
         if (!Directory.Exists(_config.IncompletePath))
         {
-            _logger.LogInformation("Incomplete directory doesn't exist yet, creating directory: {incompleteDir}", _config.IncompletePath);
+            _logger.LogInformation("Incomplete directory doesn't exist yet, creating directory: {IncompleteDir}", _config.IncompletePath);
             Directory.CreateDirectory(_config.IncompletePath);
         }
         else
         {
             // Delete everything inside the incomplete directory
-            foreach (var file in Directory.GetFiles(_config.IncompletePath))
+            foreach (var filePath in Directory.GetFiles(_config.IncompletePath))
             {
-                _logger.LogInformation("Deleting file in incomplete directory: {file}", file);
+                _logger.LogInformation("Deleting file in incomplete directory: {FilePath}", filePath);
                 try
                 {
-                    File.Delete(file);
+                    File.Delete(filePath);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error deleting file: {file}", file);
-                    continue;
+                    _logger.LogError(ex, "Error deleting file: {FilePath}", filePath);
                 }
             }
         }
@@ -263,10 +261,10 @@ public partial class DownloadService
 
             if (File.Exists(filePath))
             {
-                _logger.LogWarning("Removing existing file in temp directory: {filePath}", filePath);
+                _logger.LogWarning("Removing existing file in temp directory: {FilePath}", filePath);
             }
 
-            _logger.LogInformation("Starting download of file to path: {Path} with extension {Extension}", filePath, fileExtension);
+            _logger.LogInformation("Starting download of file to path: {FilePath} with extension {FileExtension}", filePath, fileExtension);
             queueItem.Status = DownloadStatus.Downloading;
 
             var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
@@ -310,7 +308,7 @@ public partial class DownloadService
                 Category = queueItem.Category,
                 Size = 0,
                 DownloadTime = 0,
-                Storage = null,
+                Storage = string.Empty,
                 Status = DownloadStatus.Failed,
                 Completed = DateTimeOffset.Now.ToUnixTimeSeconds(),
                 Id = queueItem.Id
