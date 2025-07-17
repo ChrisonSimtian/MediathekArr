@@ -1,6 +1,7 @@
 ﻿using MediathekArr.Models;
 using MediathekArr.Models.Newznab;
 using MediathekArr.Models.Rulesets;
+using MediathekArr.Extensions;
 using MediathekArr.Utilities;
 using System.Globalization;
 using System.Text;

@@ -7,6 +7,7 @@ using MediathekArr.Models;
 using MediathekArr.Models.Newznab;
 using MediathekArr.Models.Rulesets;
 using MediathekArr.Utilities;
+using MediathekArr.Extensions;
 using Microsoft.Extensions.Caching.Memory;
 using Guid = MediathekArr.Models.Newznab.Guid;
 using MatchType = MediathekArr.Models.Rulesets.MatchType;
