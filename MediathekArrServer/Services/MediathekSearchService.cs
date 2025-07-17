@@ -3,15 +3,15 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using MediathekArrLib.Models;
-using MediathekArrLib.Models.Newznab;
-using MediathekArrLib.Models.Rulesets;
-using MediathekArrLib.Utilities;
+using MediathekArr.Models;
+using MediathekArr.Models.Newznab;
+using MediathekArr.Models.Rulesets;
+using MediathekArr.Utilities;
 using Microsoft.Extensions.Caching.Memory;
-using Guid = MediathekArrLib.Models.Newznab.Guid;
-using MatchType = MediathekArrLib.Models.Rulesets.MatchType;
+using Guid = MediathekArr.Models.Newznab.Guid;
+using MatchType = MediathekArr.Models.Rulesets.MatchType;
 
-namespace MediathekArrServer.Services;
+namespace MediathekArr.Services;
 
 public partial class MediathekSearchService(IHttpClientFactory httpClientFactory, IMemoryCache cache, ItemLookupService itemLookupService)
 {

@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace MediathekArrLib.Models;
+namespace MediathekArr.Models;
 
 public record TvdbData(int Id, string Name, [property: JsonPropertyName("german_name")] string GermanName, List<TvdbAlias> Aliases, List<TvdbEpisode> Episodes)
 {

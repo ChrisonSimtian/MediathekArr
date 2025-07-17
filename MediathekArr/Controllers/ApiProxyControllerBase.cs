@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net;
 
-namespace MediathekArrDownloader.Controllers;
+namespace MediathekArr.Controllers;
 
 public abstract class ApiProxyControllerBase : ControllerBase
 {

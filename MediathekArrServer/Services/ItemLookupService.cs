@@ -1,8 +1,8 @@
-﻿using MediathekArrLib.Models;
+﻿using MediathekArr.Models;
 using Microsoft.Extensions.Caching.Memory;
 using System.Text.Json;
 
-namespace MediathekArrServer.Services;
+namespace MediathekArr.Services;
 
 public class ItemLookupService(IHttpClientFactory httpClientFactory, IConfiguration configuration, IMemoryCache memoryCache)
 {

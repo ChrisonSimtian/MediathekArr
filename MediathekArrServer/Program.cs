@@ -1,5 +1,5 @@
-using MediathekArrLib.Utilities;
-using MediathekArrServer.Services;
+using MediathekArr.Utilities;
+using MediathekArr.Services;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Scalar.AspNetCore;
 

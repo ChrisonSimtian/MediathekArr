@@ -1,8 +1,8 @@
-using MediathekArrServer.Services;
+using MediathekArr.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Text;
 
-namespace MediathekArrServer.Controllers;
+namespace MediathekArr.Controllers;
 
 [ApiController]
 [Route("api")]

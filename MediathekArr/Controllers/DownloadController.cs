@@ -1,10 +1,10 @@
-﻿using MediathekArrDownloader.Models;
-using MediathekArrDownloader.Models.SABnzbd;
-using MediathekArrDownloader.Services;
+﻿using MediathekArr.Models;
+using MediathekArr.Models.SABnzbd;
+using MediathekArr.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.RegularExpressions;
 
-namespace MediathekArrDownloader.Controllers;
+namespace MediathekArr.Controllers;
 
 [ApiController]
 [Route("[controller]")]

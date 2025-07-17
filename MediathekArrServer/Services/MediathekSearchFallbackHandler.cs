@@ -1,14 +1,14 @@
-﻿using MediathekArrLib.Models;
-using MediathekArrLib.Models.Newznab;
-using MediathekArrLib.Models.Rulesets;
-using MediathekArrLib.Utilities;
+﻿using MediathekArr.Models;
+using MediathekArr.Models.Newznab;
+using MediathekArr.Models.Rulesets;
+using MediathekArr.Utilities;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Guid = MediathekArrLib.Models.Newznab.Guid;
+using Guid = MediathekArr.Models.Newznab.Guid;
 
-namespace MediathekArrServer.Services;
+namespace MediathekArr.Services;
 
 public partial class MediathekSearchFallbackHandler
 {

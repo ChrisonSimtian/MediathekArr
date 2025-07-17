@@ -1,7 +1,6 @@
-﻿using MediathekArrDownloader.Models;
-using MediathekArrDownloader.Models.SABnzbd;
-using MediathekArrDownloader.Utilities;
-using MediathekArrLib.Utilities;
+﻿using MediathekArr.Models;
+using MediathekArr.Models.SABnzbd;
+using MediathekArr.Utilities;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO.Compression;
@@ -9,7 +8,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace MediathekArrDownloader.Services;
+namespace MediathekArr.Services;
 
 public partial class DownloadService
 {

@@ -1,7 +1,7 @@
-using MediathekArrLib.Utilities;
+using MediathekArr.Utilities;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using MediathekArrDownloader.Services;
-using MediathekArrDownloader.Models;
+using MediathekArr.Services;
+using MediathekArr.Models;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);

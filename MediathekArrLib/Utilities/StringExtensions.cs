@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using System.Text;
 
-namespace MediathekArrLib.Utilities;
+namespace MediathekArr.Utilities;
 public static class StringExtensions
 {
     public static string RemoveAccentButKeepGermanUmlauts(this string text)

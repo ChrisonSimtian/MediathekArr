@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace MediathekArrDownloader.Models.SABnzbd;
+namespace MediathekArr.Models.SABnzbd;
 
 public class HistoryWrapper
 {
