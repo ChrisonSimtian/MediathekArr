@@ -8,6 +8,7 @@
 		<EnableSdkContainerDebugging>True</EnableSdkContainerDebugging>
 		<ContainerBaseImage>mcr.microsoft.com/dotnet/aspnet:9.0</ContainerBaseImage>
 		<UserSecretsId>6f9f5643-8dc2-4efe-8c30-608b5c2bb8c5</UserSecretsId>
+		<RootNamespace>MediathekArr</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>
