@@ -2,8 +2,8 @@
 
 namespace MediathekArr.Models.SABnzbd;
 
-public class SabnzbdHistory
+public class History
 {
     [JsonPropertyName("slots")]
-    public List<SabnzbdHistoryItem> Items { get; set; }
+    public List<HistoryItem> Items { get; set; }
 }

@@ -2,11 +2,11 @@
 
 namespace MediathekArr.Models.SABnzbd;
 
-public class SabnzbdQueueItem
+public class QueueItem
 {
     [JsonPropertyName("status")]
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public SabnzbdDownloadStatus Status { get; set; }
+    public DownloadStatus Status { get; set; }
 
     [JsonPropertyName("index")]
     public int Index { get; set; }
