@@ -4,11 +4,12 @@ using System.Text.Json;
 
 namespace MediathekArr.Services;
 
-public class ItemLookupService(IHttpClientFactory httpClientFactory, IConfiguration configuration, IMemoryCache memoryCache)
+public class ItemLookupService(IHttpClientFactory httpClientFactory, IConfiguration configuration, IMemoryCache memoryCache, ILogger logger)
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient();
     private readonly string _apiBaseUrl = configuration["MEDIATHEKARR_API_BASE_URL"] ?? "https://mediathekarr.pcjones.de/api/v1";
     private readonly IMemoryCache _memoryCache = memoryCache;
+    private readonly ILogger _logger = logger;
 
     private static JsonSerializerOptions GetJsonSerializerOptions()
     {
@@ -18,7 +19,7 @@ public class ItemLookupService(IHttpClientFactory httpClientFactory, IConfigurat
         };
     }
 
-    public async Task<TvdbData?> GetShowInfoByTvdbId(int? tvdbid)
+    public async Task<Models.Tvdb.Data?> GetShowInfoByTvdbId(int? tvdbid)
     {
         if (tvdbid == null)
         {
@@ -26,7 +27,7 @@ public class ItemLookupService(IHttpClientFactory httpClientFactory, IConfigurat
         }
 
         var cacheKey = $"TvdbInfo_{tvdbid}";
-        if (_memoryCache.TryGetValue(cacheKey, out TvdbData? cachedTvdbInfo))
+        if (_memoryCache.TryGetValue(cacheKey, out Models.Tvdb.Data? cachedTvdbInfo))
         {
             if (cachedTvdbInfo != null)
             {
@@ -45,11 +46,11 @@ public class ItemLookupService(IHttpClientFactory httpClientFactory, IConfigurat
         }
 
         var jsonResponse = await response.Content.ReadAsStringAsync();
-        var tvdbInfo = JsonSerializer.Deserialize<TvdbInfoResponse>(jsonResponse, GetJsonSerializerOptions());
+        var tvdbInfo = JsonSerializer.Deserialize<Models.Tvdb.InfoResponse>(jsonResponse, GetJsonSerializerOptions());
 
         if (tvdbInfo?.Status == "error")
         {
-            // TODO log error message
+            _logger.LogError("Error fetching TVDB data: {Status}", tvdbInfo.Status);
             return null;
         }
 
