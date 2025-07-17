@@ -31,23 +31,23 @@ if [ "$1" == "--user-mode" ]; then
     shift
 
     # Start MediathekArrServer
-    cd /app/MediathekArrServer
-    dotnet MediathekArrServer.dll &
+    cd /app/MediathekArr.Server
+    dotnet MediathekArr.Server.dll &
     SERVER_PID=$!
 
     # Start MediathekArrDownloader
-    cd /app/MediathekArrDownloader
-    dotnet MediathekArrDownloader.dll &
+    cd /app/MediathekArr.Downloader
+    dotnet MediathekArr.Downloader.dll &
     DOWNLOADER_PID=$!
 
     # Monitor processes
     while true; do
         if ! kill -0 $SERVER_PID 2>/dev/null; then
-            echo "MediathekArrServer crashed. Exiting."
+            echo "MediathekArr.Server crashed. Exiting."
             exit 1
         fi
         if ! kill -0 $DOWNLOADER_PID 2>/dev/null; then
-            echo "MediathekArrDownloader crashed. Exiting."
+            echo "MediathekArr.Downloader crashed. Exiting."
             exit 1
         fi
         sleep 1

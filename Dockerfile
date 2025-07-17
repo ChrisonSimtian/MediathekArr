@@ -5,13 +5,13 @@ WORKDIR /app
 COPY . ./
 RUN dotnet restore
 
-# Publish MediathekArrServer
-WORKDIR /app/MediathekArrServer
-RUN dotnet publish -c Release -o /app/out/MediathekArrServer
+# Publish MediathekArr.Server
+WORKDIR /app/MediathekArr.Server
+RUN dotnet publish -c Release -o /app/out/MediathekArr.Server
 
-# Publish MediathekArrDownloader
-WORKDIR /app/MediathekArr
-RUN dotnet publish -c Release -o /app/out/MediathekArrDownloader
+# Publish MediathekArr.Downloader
+WORKDIR /app/MediathekArr.Downloader
+RUN dotnet publish -c Release -o /app/out/MediathekArr.Downloader
 
 # Final runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
@@ -35,8 +35,8 @@ RUN wget -O /etc/apt/keyrings/gpg-pub-moritzbunkus.gpg https://mkvtoolnix.downlo
 WORKDIR /app
 
 # Copy the built apps from the build environment
-COPY --from=build-env /app/out/MediathekArrServer /app/MediathekArrServer
-COPY --from=build-env /app/out/MediathekArrDownloader /app/MediathekArrDownloader
+COPY --from=build-env /app/out/MediathekArr.Server /app/MediathekArr.Server
+COPY --from=build-env /app/out/MediathekArr.Downloader /app/MediathekArr.Downloader
 
 # Copy the startup script
 COPY docker_start.sh /app/docker_start.sh
