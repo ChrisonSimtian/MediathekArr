@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\MediathekArr.Lib\MediathekArr.Lib.csproj" />
+  </ItemGroup>
+
+</Project>
