@@ -168,7 +168,10 @@ function Invoke-BuildBaselineImage {
         $platforms = 'linux/amd64',
         [Parameter()]
         [switch]
-        $saveImage
+        $saveImage,
+        [Parameter()]
+        [string]
+        $dockerfilePath = 'docker/mediathekarr-baseline/Dockerfile'
     )
     # Build the baseline Docker image from Dockerfile
     Write-Debug "🔄 Building baseline Docker image..."
@@ -177,7 +180,7 @@ function Invoke-BuildBaselineImage {
     Write-Verbose "🔧 Building image: $tagName for platforms: $platforms"
 
     # Dockerfile Valdiation
-    $dockerfile = "Dockerfile"
+    $dockerfile = $dockerfilePath
     Write-Verbose "📂 Using Dockerfile: $dockerfile"
     if ( -not (Test-Path -Path $dockerfile)) {
         Write-Error "❌ Dockerfile not found at: $dockerfile"

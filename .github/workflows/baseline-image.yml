@@ -1,0 +1,144 @@
+# .github/workflows/baseline-image.yml
+name: Build Baseline Docker Images
+
+on:
+  push:
+    paths:
+      - 'docker/mediathekarr-baseline/**'
+    branches:
+      - main
+      - develop
+      - feature/*
+      - docker/*
+      - release/*
+  pull_request:
+    paths:
+      - 'docker/mediathekarr-baseline/**'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/mediathekarr-baseline
+
+jobs:
+  discover-dockerfiles:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Discover Dockerfiles
+        id: set-matrix
+        run: |
+          # Find all Dockerfiles in the baseline directory
+          dockerfiles=$(find docker/mediathekarr-baseline -name "dockerfile*" -o -name "Dockerfile*" | sort)
+          
+          # Create matrix configuration
+          matrix_include=""
+          for dockerfile in $dockerfiles; do
+            # Extract architecture from filename if present (e.g., dockerfile.arm64, dockerfile.amd64)
+            arch=$(basename "$dockerfile" | sed 's/^[Dd]ockerfile\.*//' | sed 's/^[Dd]ockerfile$/amd64/')
+            if [ -z "$arch" ] || [ "$arch" = "dockerfile" ] || [ "$arch" = "Dockerfile" ]; then
+              arch="amd64"
+            fi
+            
+            # Build the matrix entry
+            if [ -n "$matrix_include" ]; then
+              matrix_include="$matrix_include,"
+            fi
+            matrix_include="$matrix_include{\"dockerfile\":\"$dockerfile\",\"arch\":\"$arch\",\"platform\":\"linux/$arch\"}"
+          done
+          
+          matrix="{\"include\":[$matrix_include]}"
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
+          echo "Matrix: $matrix"
+
+  build-baseline:
+    needs: discover-dockerfiles
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJson(needs.discover-dockerfiles.outputs.matrix) }}
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch,suffix=-${{ matrix.arch }}
+            type=ref,event=pr,suffix=-${{ matrix.arch }}
+            type=sha,suffix=-${{ matrix.arch }}
+            type=raw,value=latest,suffix=-${{ matrix.arch }},enable={{is_default_branch}}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          platforms: ${{ matrix.platform }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  create-manifest:
+    needs: [discover-dockerfiles, build-baseline]
+    runs-on: ubuntu-latest
+    if: needs.discover-dockerfiles.outputs.matrix != '{"include":[]}'
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create and push manifest
+        run: |
+          # Extract architectures from matrix
+          architectures=$(echo '${{ needs.discover-dockerfiles.outputs.matrix }}' | jq -r '.include[].arch' | sort | uniq)
+          
+          # Determine tag based on event
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base_tag="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:pr-${{ github.event.number }}"
+          elif [ "${{ github.ref_name }}" = "main" ]; then
+            base_tag="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+          else
+            base_tag="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}"
+          fi
+          
+          # Create manifest list
+          manifest_images=""
+          for arch in $architectures; do
+            if [ -n "$manifest_images" ]; then
+              manifest_images="$manifest_images "
+            fi
+            manifest_images="$manifest_images${base_tag}-${arch}"
+          done
+          
+          # Create and push manifest
+          docker manifest create $base_tag $manifest_images
+          docker manifest push $base_tag
