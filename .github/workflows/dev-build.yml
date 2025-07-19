@@ -1,0 +1,214 @@
+# .github/workflows/dev-build.yml
+name: Development Build
+
+on:
+  push:
+    branches:
+      - '!main'
+      - '**'
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - '*.sln'
+      - '**/*.csproj'
+      - '**/*.props'
+      - '**/*.targets'
+  pull_request:
+    branches:
+      - develop
+      - main
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - '*.sln'
+      - '**/*.csproj'
+      - '**/*.props'
+      - '**/*.targets'
+
+env:
+  REGISTRY: ghcr.io
+  DOTNET_VERSION: '9.0'
+
+jobs:
+  discover-projects:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Discover containerizable projects
+        id: set-matrix
+        run: |
+          # Find all .csproj files in src that have containerization enabled
+          projects=$(find src -name "*.csproj" -exec grep -l "EnableSdkContainerSupport\|PublishProfile.*DefaultContainer" {} \; 2>/dev/null || true)
+          
+          # If no explicit container projects found, look for web projects
+          if [ -z "$projects" ]; then
+            projects=$(find src -name "*.csproj" -exec grep -l "Microsoft\.AspNetCore\|Web\.Sdk" {} \; 2>/dev/null || true)
+          fi
+          
+          matrix_include=""
+          for project in $projects; do
+            project_name=$(basename "$project" .csproj)
+            project_dir=$(dirname "$project")
+            
+            if [ -n "$matrix_include" ]; then
+              matrix_include="$matrix_include,"
+            fi
+            matrix_include="$matrix_include{\"project\":\"$project\",\"name\":\"$project_name\",\"directory\":\"$project_dir\"}"
+          done
+          
+          if [ -n "$matrix_include" ]; then
+            matrix="{\"include\":[$matrix_include]}"
+          else
+            matrix="{\"include\":[]}"
+          fi
+          
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
+          echo "Discovered projects matrix: $matrix"
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Run unit tests
+        run: |
+          dotnet test tests/ \
+            --configuration Release \
+            --no-build \
+            --verbosity normal \
+            --logger trx \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./test-results \
+            -- RunConfiguration.CollectSourceInformation=true
+
+      - name: Run integration tests
+        continue-on-error: true  # Don't fail the pipeline if integration tests fail in dev
+        run: |
+          dotnet test tests/ \
+            --configuration Release \
+            --no-build \
+            --verbosity normal \
+            --logger trx \
+            --filter Category=Integration \
+            --results-directory ./integration-test-results \
+            -- RunConfiguration.CollectSourceInformation=true
+
+      - name: Publish test results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Test Results
+          path: |
+            ./test-results/*.trx
+            ./integration-test-results/*.trx
+          reporter: dotnet-trx
+          fail-on-error: false  # Don't fail in dev pipeline
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          directory: ./test-results
+          fail_ci_if_error: false
+
+  build-and-push:
+    needs: [discover-projects, test]
+    runs-on: ubuntu-latest
+    if: needs.discover-projects.outputs.matrix != '{"include":[]}'
+    strategy:
+      matrix: ${{ fromJson(needs.discover-projects.outputs.matrix) }}
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set version and tags
+        id: version
+        run: |
+          # Generate version based on branch and commit
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            VERSION="pr-${{ github.event.number }}-${GITHUB_SHA::8}"
+            TAGS="pr-${{ github.event.number }},pr-${{ github.event.number }}-${GITHUB_SHA::8}"
+          elif [ "${{ github.ref_name }}" = "develop" ]; then
+            VERSION="beta-${GITHUB_SHA::8}"
+            TAGS="beta,beta-${GITHUB_SHA::8},develop"
+          else
+            # Feature branch
+            BRANCH_NAME=$(echo "${{ github.ref_name }}" | sed 's/[^a-zA-Z0-9]/-/g' | tr '[:upper:]' '[:lower:]')
+            VERSION="preview-${BRANCH_NAME}-${GITHUB_SHA::8}"
+            TAGS="preview-${BRANCH_NAME},preview-${BRANCH_NAME}-${GITHUB_SHA::8}"
+          fi
+          
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tags=$TAGS" >> $GITHUB_OUTPUT
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Publish container
+        run: |
+          IFS=',' read -ra TAG_ARRAY <<< "${{ steps.version.outputs.tags }}"
+          
+          # Build the container tags arguments
+          TAG_ARGS=""
+          for tag in "${TAG_ARRAY[@]}"; do
+            TAG_ARGS="$TAG_ARGS -t ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.name }}:$tag"
+          done
+          
+          dotnet publish ${{ matrix.project }} \
+            --configuration Release \
+            --os linux \
+            --arch x64 \
+            -p:PublishProfile=DefaultContainer \
+            -p:ContainerImageTags="${{ steps.version.outputs.tags }}" \
+            -p:ContainerRegistry=${{ env.REGISTRY }} \
+            -p:ContainerRepository=${{ github.repository }}/${{ matrix.name }} \
+            -p:ContainerImageName=${{ matrix.name }}
+
+  summary:
+    needs: [test, build-and-push]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Development build summary
+        run: |
+          echo "## Development Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Tests**: ${{ needs.test.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Container Build**: ${{ needs.build-and-push.result }}" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ needs.test.result }}" != "success" ]; then
+            echo "⚠️ **Tests failed but containers were still built for development purposes**" >> $GITHUB_STEP_SUMMARY
+          fi
