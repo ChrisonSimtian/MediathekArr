@@ -1,0 +1,13 @@
+<Project>
+    <PropertyGroup Label="Project Properties">
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>MediathekArr</RootNamespace>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(IsTestProject)' == 'true'" Label="Dont Publish, dont Pack">
+        <IsPackable>false</IsPackable>
+        <IsPublishable>false</IsPublishable>
+    </PropertyGroup>
+</Project>

@@ -4,7 +4,8 @@
 		<RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
 		<EnableSdkContainerDebugging>True</EnableSdkContainerDebugging>
 		<ContainerBaseImage>mediathekarr-baseline</ContainerBaseImage>
-		<ContainerRepository>mediathekarr-downloader</ContainerRepository>
+		<ContainerImageName>mediathekarr-downloader</ContainerImageName>
+		<ContainerImageTag>latest</ContainerImageTag>
 		<UserSecretsId>c655a1a3-0f6d-45f1-9615-dc576c4c0b84</UserSecretsId>
 	</PropertyGroup>
 
