@@ -3,8 +3,8 @@
 	<PropertyGroup>
 		<RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
 		<EnableSdkContainerDebugging>True</EnableSdkContainerDebugging>
-		<ContainerBaseImage>mediathekarr-baseline</ContainerBaseImage>
-		<ContainerImageName>mediathekarr-downloader</ContainerImageName>
+		<ContainerBaseImage>ghcr.io/chrisonsimtian/mediathekarr-baseline:latest</ContainerBaseImage>
+		<ContainerRepository>mediathekarr-downloader</ContainerRepository>
 		<ContainerImageTag>latest</ContainerImageTag>
 		<UserSecretsId>c655a1a3-0f6d-45f1-9615-dc576c4c0b84</UserSecretsId>
 	</PropertyGroup>

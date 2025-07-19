@@ -1,7 +1,7 @@
-ARG TARGETPLATFORM=linux/arm64
+ARG TARGETPLATFORM=linux/amd64
 
 # Build baseline runtime image
-FROM --platform=$TARGETPLATFORM mcr.microsoft.com/dotnet/aspnet:9.0 AS mediathekarr-baseline
+FROM mcr.microsoft.com/dotnet/aspnet AS mediathekarr-baseline
 
 # Install required packages
 RUN apt-get update \

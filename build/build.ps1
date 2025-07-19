@@ -165,7 +165,7 @@ function Invoke-BuildBaselineImage {
         $tag = 'latest',
         [Parameter()]
         [string]
-        $platforms = 'linux/amd64,linux/arm64',
+        $platforms = 'linux/amd64',
         [Parameter()]
         [switch]
         $saveImage
@@ -186,10 +186,9 @@ function Invoke-BuildBaselineImage {
 
     # Use buildx for multi-platform builds
     Write-Debug "🔄 Building Docker image..."
-    docker buildx build `
+    docker build `
         --platform $platforms `
         --pull `
-        --load `
         --file $dockerfile `
         --tag $tagName `
         ..
